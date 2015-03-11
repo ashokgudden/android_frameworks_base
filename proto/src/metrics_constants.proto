@@ -3979,5 +3979,10 @@ message MetricsEvent {
 
     // Delight custom constants
     DELIGHT = 1200;
+
+    // ValidusOs custom constants
+    VALIDUS = 1500;
+
+    LOCKSCREEN_WEATHER_SETTINGS = 1503;
   }
 }
