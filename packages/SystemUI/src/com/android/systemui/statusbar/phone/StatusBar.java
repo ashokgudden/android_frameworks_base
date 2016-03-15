@@ -5593,6 +5593,9 @@ public class StatusBar extends SystemUI implements DemoMode,
             resolver.registerContentObserver(Settings.System.getUriFor(
                   Settings.System.STATUS_BAR_SHOW_TICKER),
                   false, this, UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.LOCKSCREEN_ROTATION),
+                    false, this, UserHandle.USER_ALL);
         }
 
         @Override
@@ -5631,6 +5634,9 @@ public class StatusBar extends SystemUI implements DemoMode,
             setQsPanelOptions();
             setUseLessBoringHeadsUp();
             updateRecentsIconPack();
+            if (mStatusBarWindowManager != null) {
+                mStatusBarWindowManager.updateKeyguardScreenRotation();
+            }
         }
     }
 
