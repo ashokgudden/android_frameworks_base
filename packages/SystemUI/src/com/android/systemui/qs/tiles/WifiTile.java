@@ -17,11 +17,13 @@
 package com.android.systemui.qs.tiles;
 
 import android.content.Context;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.provider.Settings;
 import android.service.quicksettings.Tile;
+import android.provider.Settings.Secure;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -115,8 +117,25 @@ public class WifiTile extends QSTileImpl<SignalState> {
     @Override
     protected void handleClick() {
         // Secondary clicks are header clicks, just toggle.
-        mState.copyTo(mStateBeforeClick);
-        mController.setWifiEnabled(!mState.value);
+        boolean easyToggle = isWiFiEasyToggleEnabled();
+        if (easyToggle) {
+            mState.copyTo(mStateBeforeClick);
+            MetricsLogger.action(mContext, getMetricsCategory(), !mState.value);
+            mController.setWifiEnabled(!mState.value);
+        } else {
+            if (!mWifiController.canConfigWifi()) {
+                    mActivityStarter.postStartActivityDismissingKeyguard(
+                            new Intent(Settings.ACTION_WIFI_SETTINGS), 0);
+                return;
+            }
+            if (!mState.value) {
+                mController.setWifiEnabled(true);
+                mState.value = true;
+            }
+            showDetail(true);
+          }
+      }
+
     }
 
     @Override
@@ -184,6 +203,11 @@ public class WifiTile extends QSTileImpl<SignalState> {
                 R.string.accessibility_quick_settings_open_settings, getTileLabel());
         state.expandedAccessibilityClassName = Switch.class.getName();
         state.state = Tile.STATE_ACTIVE;
+    }
+
+    public boolean isWiFiEasyToggleEnabled() {
+        return Settings.Secure.getInt(mContext.getContentResolver(),
+                Settings.Secure.QS_WIFI_EASY_TOGGLE, 0) == 1;
     }
 
     @Override
