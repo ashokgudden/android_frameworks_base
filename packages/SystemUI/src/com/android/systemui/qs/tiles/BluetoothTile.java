@@ -20,6 +20,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.provider.Settings;
 import android.service.quicksettings.Tile;
@@ -82,8 +83,23 @@ public class BluetoothTile extends QSTileImpl<BooleanState> {
     @Override
     protected void handleClick() {
         // Secondary clicks are header clicks, just toggle.
-        final boolean isEnabled = (Boolean)mState.value;
-        mController.setBluetoothEnabled(!isEnabled);
+        boolean easyToggle = isBtEasyToggleEnabled();
+            if (easyToggle) {
+                final boolean isEnabled = (Boolean)mState.value;
+                MetricsLogger.action(mContext, getMetricsCategory(), !isEnabled);
+	            mController.setBluetoothEnabled(!isEnabled);
+            } else {
+                if (!mController.canConfigBluetooth()) {
+                    mActivityStarter.postStartActivityDismissingKeyguard(
+                       new Intent(Settings.ACTION_BLUETOOTH_SETTINGS), 0);
+    	            return;
+    	        }
+                if (!mState.value) {
+                    mState.value = true;
+    	            mController.setBluetoothEnabled(true);
+                }
+            showDetail(true);
+            }
     }
 
     @Override
@@ -147,6 +163,11 @@ public class BluetoothTile extends QSTileImpl<BooleanState> {
         state.dualLabelContentDescription = mContext.getResources().getString(
                 R.string.accessibility_quick_settings_open_settings, getTileLabel());
         state.expandedAccessibilityClassName = Switch.class.getName();
+    }
+
+    public boolean isBtEasyToggleEnabled() {
+        return Settings.Secure.getInt(mContext.getContentResolver(),
+            Settings.Secure.QS_BT_EASY_TOGGLE, 0) == 1;
     }
 
     @Override
