@@ -7453,6 +7453,12 @@ public final class Settings {
         public static final String LOCK_POWER_MENU_DISABLED = "lockscreen_power_menu_disabled";
 
         /**
+         * Whether to enable navigation bar
+         * @hide
+         */
+        public static final String NAVIGATION_BAR_ENABLED = "navigation_bar_enabled";
+
+        /**
          * Whether to set a lower brightness level when enabling night mode
          * 0: Disabled
          * 1: Set the brightness to a very low value
