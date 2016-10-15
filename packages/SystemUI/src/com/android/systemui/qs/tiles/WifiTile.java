@@ -111,7 +111,7 @@ public class WifiTile extends QSTileImpl<SignalState> {
 
     @Override
     public Intent getLongClickIntent() {
-        return WIFI_SETTINGS;
+        return null;
     }
 
     @Override
@@ -133,9 +133,7 @@ public class WifiTile extends QSTileImpl<SignalState> {
                 mState.value = true;
             }
             showDetail(true);
-          }
-      }
-
+        }
     }
 
     @Override
@@ -146,6 +144,22 @@ public class WifiTile extends QSTileImpl<SignalState> {
             return;
         }
         showDetail(true);
+    }
+
+    @Override
+    protected void handleLongClick() {
+        boolean easyToggle = isWiFiEasyToggleEnabled();
+        if (easyToggle) {
+            if (!mWifiController.canConfigWifi()) {
+                    mActivityStarter.postStartActivityDismissingKeyguard(
+                            new Intent(Settings.ACTION_WIFI_SETTINGS), 0);
+            } else {
+                showDetail(true);
+            }
+        } else {
+                    mActivityStarter.postStartActivityDismissingKeyguard(
+                            new Intent(Settings.ACTION_WIFI_SETTINGS), 0);
+        }
     }
 
     @Override
