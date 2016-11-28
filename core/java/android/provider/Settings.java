@@ -4701,6 +4701,12 @@ public final class Settings {
 
         /** End of Delight system settings**/
 
+         /**
+         * Whether to display qs tile titles in the qs panel
+         * @hide
+         */
+        public static final String QS_TILE_TITLE_VISIBILITY = "qs_tile_title_visibility";
+
         /**
          * Whether to use the MTP by default after connecting to PC
          * @hide
@@ -4920,6 +4926,7 @@ public final class Settings {
             PRIVATE_SETTINGS.add(QS_ROWS_LANDSCAPE);
             PRIVATE_SETTINGS.add(QS_COLUMNS_PORTRAIT);
             PRIVATE_SETTINGS.add(QS_COLUMNS_LANDSCAPE);
+            PRIVATE_SETTINGS.add(QS_TILE_TITLE_VISIBILITY);
         }
 
         /**
