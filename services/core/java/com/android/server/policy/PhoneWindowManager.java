@@ -123,6 +123,7 @@ import android.app.ActivityManager.StackId;
 import android.app.ActivityManagerInternal;
 import android.app.ActivityManagerInternal.SleepToken;
 import android.app.AppOpsManager;
+import android.app.IActivityManager;
 import android.app.IUiModeManager;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
@@ -426,6 +427,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     WindowManagerFuncs mWindowManagerFuncs;
     WindowManagerInternal mWindowManagerInternal;
     PowerManager mPowerManager;
+    IActivityManager mActivityManager;
     ActivityManagerInternal mActivityManagerInternal;
     AutofillManagerInternal mAutofillManagerInternal;
     InputManagerInternal mInputManagerInternal;
@@ -3583,6 +3585,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         final boolean down = event.getAction() == KeyEvent.ACTION_DOWN;
         final boolean canceled = event.isCanceled();
 
+        final boolean backKey = keyCode == KeyEvent.KEYCODE_BACK;
+
         if (DEBUG_INPUT) {
             Log.d(TAG, "interceptKeyTi keyCode=" + keyCode + " down=" + down + " repeatCount="
                     + repeatCount + " keyguardOn=" + keyguardOn + " mHomePressed=" + mHomePressed
@@ -3665,6 +3669,16 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         // Any key that is not Alt or Meta cancels Caps Lock combo tracking.
         if (mPendingCapsLockToggle && !KeyEvent.isMetaKey(keyCode) && !KeyEvent.isAltKey(keyCode)) {
             mPendingCapsLockToggle = false;
+        }
+
+        // Screen pinning within back key early check-in.
+        if (backKey && down) {
+            if (repeatCount == 0 && isScreenPinningOn()) {
+                preloadActivityManager();
+            } else if (longPress && isScreenPinningOn()) {
+                stopScreenPinning();
+                return -1;
+            }
         }
 
         // First we always handle the home key here, so applications
@@ -4408,6 +4422,39 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         StatusBarManagerInternal statusbar = getStatusBarManagerInternal();
         if (statusbar != null) {
             statusbar.toggleRecentApps();
+        }
+    }
+
+    private void preloadActivityManager() {
+        if (mActivityManager == null) {
+            mActivityManager = ActivityManagerNative.getDefault();
+        }
+    }
+
+    private boolean isScreenPinningOn() {
+        preloadActivityManager();
+        try {
+            return mActivityManager.isInLockTaskMode();
+        } catch (RemoteException|NullPointerException e) {
+            // no-op
+        }
+        return false;
+    }
+
+    private void stopScreenPinning() {
+        preloadActivityManager();
+        try {
+            mActivityManager.stopSystemLockTaskMode();
+            performHapticFeedbackLw(null, HapticFeedbackConstants.LONG_PRESS, false);
+            // Keep updating system ui visibility from UI thread.
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    updateSystemUiVisibilityLw();
+                }
+            });
+        } catch (RemoteException|NullPointerException e) {
+            // no-op
         }
     }
 
