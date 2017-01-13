@@ -80,6 +80,7 @@
 
     <!-- PiP Tile -->
     <string name="quick_settings_pip_label">PiP</string>
+
     <string name="quick_settings_pip_tile_app_na">App does not support PiP</string>
 
      <!-- Sound QS Tile -->
@@ -180,4 +181,8 @@
     <string name="omnijaws_current_text">Now</string>
     <string name="omnijaws_package_not_available">OmniJaws not available</string>
     <string name="omnijaws_service_last_update">Last update:</string>
+
+    <!-- Ambient display and lift gesture Tile -->
+    <string name="quick_settings_doze_notifications_label">Ambient notifications</string>
+
 </resources>
