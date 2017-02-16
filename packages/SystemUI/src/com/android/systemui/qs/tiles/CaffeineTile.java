@@ -44,9 +44,11 @@ public class CaffeineTile extends QSTileImpl<BooleanState> {
     private static int[] DURATIONS = new int[] {
         5 * 60,   // 5 min
         10 * 60,  // 10 min
+        20 * 60,  // 20 min
         30 * 60,  // 30 min
-        -1,       // infinity
+//        -1,       // infinity --> this will be longclick behaviour
     };
+    private static int mDurationInfinity = -1; 
     private CountDownTimer mCountdownTimer = null;
     public long mLastClickTime = -1;
 
@@ -95,7 +97,7 @@ public class CaffeineTile extends QSTileImpl<BooleanState> {
             // cycle duration
             mDuration++;
             if (mDuration >= DURATIONS.length) {
-                // all durations cycled, turn if off
+                // all durations cycled, turn it off
                 mDuration = -1;
                 stopCountDown();
                 if (mWakeLock.isHeld()) {
@@ -124,9 +126,28 @@ public class CaffeineTile extends QSTileImpl<BooleanState> {
     }
 
     @Override
+    protected void handleLongClick() {
+        // override to avoid force close
+        if (mDuration != DURATIONS.length + 2) {
+            mDuration = DURATIONS.length + 2; // = Infinity
+            startCountDown(mDurationInfinity);
+            if (!mWakeLock.isHeld()) {
+                mWakeLock.acquire();
+            }
+        } else {
+            if (mWakeLock.isHeld()) {
+                mWakeLock.release();
+            }
+            // turn it off
+            mDuration = -1;
+        }
+        mLastClickTime = SystemClock.elapsedRealtime();
+        refreshState();
+    }
+
+    @Override
     public Intent getLongClickIntent() {
-        return new Intent().setComponent(new ComponentName(
-            "com.android.settings", "com.android.settings.Settings$DisplaySettingsActivity"));
+        return null;
     }
 
     @Override
