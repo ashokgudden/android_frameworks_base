@@ -150,6 +150,9 @@ public class BluetoothTile extends QSTileImpl<BooleanState> {
                 || mController.getBluetoothState() == BluetoothAdapter.STATE_TURNING_ON;
         state.dualTarget = true;
         state.value = enabled;
+        if (mController.getBluetoothState() == BluetoothAdapter.STATE_ON) {
+            fireToggleStateChanged(true);
+        }
         if (enabled) {
             state.label = null;
             if (connected) {
