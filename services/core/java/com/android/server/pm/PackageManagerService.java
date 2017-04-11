@@ -15718,14 +15718,6 @@ public class PackageManagerService extends IPackageManager.Stub
                                         & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
                     final boolean downgradePermitted =
                             (downgradeRequested) && ((Build.IS_DEBUGGABLE) || (packageDebuggable));
-                    if (!downgradePermitted) {
-                        try {
-                            checkDowngrade(dataOwnerPkg, pkgLite);
-                        } catch (PackageManagerException e) {
-                            Slog.w(TAG, "Downgrade detected: " + e.getMessage());
-                            return PackageHelper.RECOMMEND_FAILED_VERSION_DOWNGRADE;
-                        }
-                    }
                 }
 
                 if (installedPkg != null) {
