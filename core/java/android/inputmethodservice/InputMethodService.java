@@ -1054,7 +1054,7 @@ public class InputMethodService extends AbstractInputMethodService {
      * is currently running in fullscreen mode.
      */
     public void updateFullscreenMode() {
-        boolean isFullscreen = mShowInputRequested && onEvaluateFullscreenMode();
+        boolean isFullscreen = false;
         boolean changed = mLastShowInputRequested != mShowInputRequested;
         if (mIsFullscreen != isFullscreen || !mFullscreenApplied) {
             changed = true;
@@ -1151,7 +1151,7 @@ public class InputMethodService extends AbstractInputMethodService {
                 && (mInputEditorInfo.imeOptions & EditorInfo.IME_FLAG_NO_FULLSCREEN) != 0) {
             return false;
         }
-        return true;
+        return false;
     }
 
     /**
