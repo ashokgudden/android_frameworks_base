@@ -154,6 +154,10 @@ public class WifiTile extends QSTileImpl<SignalState> {
                     mActivityStarter.postStartActivityDismissingKeyguard(
                             new Intent(Settings.ACTION_WIFI_SETTINGS), 0);
             } else {
+                if (!mState.value) {
+                    mController.setWifiEnabled(true);
+                    mState.value = true;
+                }
                 showDetail(true);
             }
         } else {
