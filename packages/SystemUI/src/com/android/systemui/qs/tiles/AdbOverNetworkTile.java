@@ -27,6 +27,7 @@ import android.net.wifi.WifiManager;
 import android.os.UserHandle;
 import android.provider.Settings;
 import android.service.quicksettings.Tile;
+import android.widget.Toast;
 import com.android.systemui.R;
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
 import com.android.systemui.qs.QSHost;
@@ -45,9 +46,17 @@ public class AdbOverNetworkTile extends QSTileImpl<BooleanState> {
 
     @Override
     protected void handleClick() {
-        LineageSettings.Secure.putIntForUser(mContext.getContentResolver(),
-                LineageSettings.Secure.ADB_PORT, getState().value ? -1 : 5555,
-                UserHandle.USER_CURRENT);
+        Intent closeIntent = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
+        if (!isAdbEnabled()) {
+           Toast.makeText(mContext, mContext.getString(
+                    R.string.quick_settings_network_adb_toast), Toast.LENGTH_LONG).show();
+           mContext.sendBroadcast(closeIntent);
+        } else {
+            LineageSettings.Secure.putIntForUser(mContext.getContentResolver(),
+                    LineageSettings.Secure.ADB_PORT, isAdbNetworkEnabled() ? -1 : 5555,
+                    UserHandle.USER_CURRENT);
+        }
+        refreshState();
     }
 
     @Override
@@ -68,6 +77,13 @@ public class AdbOverNetworkTile extends QSTileImpl<BooleanState> {
 
     @Override
     protected void handleUpdateState(BooleanState state, Object arg) {
+        state.value = isAdbEnabled();
+        if (!state.value) {
+            state.icon = ResourceIcon.get(R.drawable.ic_qs_network_adb_off);
+            state.label = mContext.getString(R.string.quick_settings_network_adb_disabled_label);
+            return;
+        }
+
         state.value = isAdbNetworkEnabled();
         if (state.value) {
             WifiManager wifiManager = (WifiManager) mContext.getSystemService(Context.WIFI_SERVICE);
