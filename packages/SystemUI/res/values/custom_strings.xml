@@ -55,9 +55,11 @@
     <string name="accessibility_quick_settings_caffeine_on">Caffeine on</string>
 
     <!-- ADB network tile -->
-    <string name="quick_settings_adb_network">ADB network</string>
-    <string name="quick_settings_network_adb_enabled_label">Adb over Net</string>
-    <string name="quick_settings_network_adb_disabled_label">Adb over Net</string>
+    <string name="quick_settings_adb_network">ADB over network</string>
+    <string name="quick_settings_network_adb_enabled_label">ADB network Enabled</string>
+    <string name="quick_settings_network_adb_disabled_label">Disabled</string>
+    <string name="quick_settings_network_adb_title">Error</string>
+    <string name="quick_settings_network_adb_toast">USB debugging is not enabled</string>
 
     <!-- Screenshot QS tile -->
     <string name="quick_settings_screenshot_label">Screenshot</string>
