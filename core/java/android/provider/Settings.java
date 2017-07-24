@@ -3836,6 +3836,13 @@ public final class Settings {
         public static final Validator SIP_RECEIVE_CALLS_VALIDATOR = sBooleanValidator;
 
         /**
+         * Whether ADB over network should be disabled when the device gets disconnected from network
+         * The value is boolean (1 or 0).
+         * @hide
+         */
+        public static final String DISABLE_ADB_NETWORK_ON_DISCONNECT = "disable_adb_network_on_disconnect";
+
+        /**
          * Call Preference String.
          * "SIP_ALWAYS" : Always use SIP with network access
          * "SIP_ADDRESS_ONLY" : Only if destination is a SIP address
