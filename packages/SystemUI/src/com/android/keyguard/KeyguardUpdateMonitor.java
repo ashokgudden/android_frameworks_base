@@ -300,6 +300,7 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener {
                     break;
                 case MSG_PROXIMITY_CHANGE:
                     handleProximityChange();
+                    break;
             }
         }
     };
