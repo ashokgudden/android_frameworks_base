@@ -24,8 +24,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.database.ContentObserver;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
+//import android.media.AudioAttributes;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.media.MediaPlayer.OnCompletionListener;
 import android.net.Uri;
 import android.os.BatteryManager;
 import android.os.Handler;
@@ -371,9 +373,40 @@ public class PowerUI extends SystemUI {
                 LineageSettings.Global.POWER_NOTIFICATIONS_RINGTONE);
 
         if (soundPath != null && !soundPath.equals("silent")) {
-            Ringtone powerRingtone = RingtoneManager.getRingtone(mContext, Uri.parse(soundPath));
-            if (powerRingtone != null) {
-                powerRingtone.play();
+
+            AudioManager mAudioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
+            MediaPlayer mp = MediaPlayer.create(mContext, Uri.parse(soundPath));
+           
+            int ringerMode = mAudioManager.getRingerMode();
+            boolean preSpeaker = mAudioManager.isSpeakerphoneOn();
+
+            if (AudioManager.RINGER_MODE_NORMAL == ringerMode) {
+                mAudioManager.setMode(AudioManager.MODE_RINGTONE);
+            }
+            // Request audio focus for playback
+            int result = mAudioManager.requestAudioFocus(null,
+                    // Use the ringtone stream.
+                    AudioManager.STREAM_RING,
+                    // Request temporary focus.
+                    AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
+
+            if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+                if (mp != null) {
+                    mp.setOnCompletionListener(new OnCompletionListener() {
+                        @Override
+                        public void onCompletion(MediaPlayer mp) {
+                            if (!preSpeaker) {
+                                mAudioManager.setSpeakerphoneOn(false);
+                            }
+                            mAudioManager.setMode(AudioManager.MODE_NORMAL);
+                            mAudioManager.abandonAudioFocus(null);
+                            mp.release();
+                            mp = null;
+                        }
+                    });
+                    mAudioManager.setSpeakerphoneOn(true);
+                    mp.start();
+                }
             }
         }
 
