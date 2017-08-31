@@ -3904,6 +3904,13 @@ public final class Settings {
          * the setting value. See an example above.
          */
 
+        // CUSTOM system settings
+        /**
+         * Double tap on navbar to sleep
+         * @hide
+         */
+        public static final String DOUBLE_TAP_SLEEP_NAVBAR = "double_tap_sleep_navbar";
+
         /**
          * Change volume up and down handlign based on rotation
          * @hide
@@ -4236,6 +4243,7 @@ public final class Settings {
             PRIVATE_SETTINGS.add(WAKE_WHEN_PLUGGED_OR_UNPLUGGED);
             PRIVATE_SETTINGS.add(ACCELEROMETER_ROTATION_ANGLES);
             PRIVATE_SETTINGS.add(LOCKSCREEN_ROTATION);
+            PRIVATE_SETTINGS.add(DOUBLE_TAP_SLEEP_NAVBAR);
         }
 
         /**
