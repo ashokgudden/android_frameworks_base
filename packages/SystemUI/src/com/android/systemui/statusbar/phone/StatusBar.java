@@ -453,6 +453,9 @@ public class StatusBar extends SystemUI implements DemoMode,
 
     boolean mExpandedVisible;
 
+    ActivityManager mAm;
+    boolean mLessBoringHeadsUp;
+
     // the tracker view
     int mTrackingPosition; // the position of the top of the tracking view.
 
@@ -785,6 +788,8 @@ public class StatusBar extends SystemUI implements DemoMode,
                 mContext.getSystemService(Context.ACCESSIBILITY_SERVICE);
 
         mPowerManager = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
+
+        mAm = (ActivityManager) mContext.getSystemService(Context.ACTIVITY_SERVICE);
 
         mDeviceProvisionedController = Dependency.get(DeviceProvisionedController.class);
         mDeviceProvisionedController.addCallback(mDeviceProvisionedListener);
@@ -5367,6 +5372,9 @@ public class StatusBar extends SystemUI implements DemoMode,
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.DOUBLE_TAP_SLEEP_GESTURE),
                     false, this, UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.LESS_BORING_HEADS_UP),
+                    false, this, UserHandle.USER_ALL);
         }
 
         @Override
@@ -5386,6 +5394,9 @@ public class StatusBar extends SystemUI implements DemoMode,
             } else if (uri.equals(Settings.System.getUriFor(
                     Settings.System.DOUBLE_TAP_SLEEP_GESTURE))) {
                 setStatusBarWindowViewOptions();
+            } else if (uri.equals(Settings.System.getUriFor(
+                    Settings.System.LESS_BORING_HEADS_UP))) {
+                setUseLessBoringHeadsUp();
             }
         }
 
@@ -5393,6 +5404,7 @@ public class StatusBar extends SystemUI implements DemoMode,
             setStatusBarWindowViewOptions();
             setLockscreenMediaMetadata();
             setQsPanelOptions();
+            setUseLessBoringHeadsUp();
         }
     }
 
@@ -5411,6 +5423,12 @@ public class StatusBar extends SystemUI implements DemoMode,
         if (mQSPanel != null) {
             mQSPanel.updateSettings();
         }
+    }
+
+    private void setUseLessBoringHeadsUp() {
+        mLessBoringHeadsUp = Settings.System.getIntForUser(mContext.getContentResolver(),
+                Settings.System.LESS_BORING_HEADS_UP, 1,
+                UserHandle.USER_CURRENT) == 1;
     }
 
     private RemoteViews.OnClickHandler mOnClickHandler = new RemoteViews.OnClickHandler() {
@@ -6965,8 +6983,38 @@ public class StatusBar extends SystemUI implements DemoMode,
     }
 
     protected boolean shouldPeek(Entry entry, StatusBarNotification sbn) {
-        if (!mUseHeadsUp || isDeviceInVrMode()) {
-            if (DEBUG) Log.d(TAG, "No peeking: no huns or vr mode");
+        boolean alwaysHeadsUpForDialer = false;
+        boolean alwaysHeadsUpForMessaging = false;
+        if (mLessBoringHeadsUp) {
+            ActivityManager.RunningTaskInfo foregroundApp = null;
+            List<ActivityManager.RunningTaskInfo> tasks = mAm.getRunningTasks(1);
+            if (tasks != null && !tasks.isEmpty()) {
+                foregroundApp = tasks.get(0);
+            }
+            String foregroundAppName = null;
+            if (foregroundApp != null) {
+                foregroundAppName = foregroundApp.baseActivity.getPackageName().toLowerCase();
+            }
+            String notificationPackageName = sbn.getPackageName().toLowerCase();
+            if (foregroundAppName != null) {
+                if (!foregroundAppName.contains("dialer")) {
+                    //heads up if dialer is not the foreground app but the notification comes from it
+                    alwaysHeadsUpForDialer = notificationPackageName.contains("dialer");
+                }
+                if (!foregroundAppName.contains("messaging")) {
+                    //heads up if messaging is not the foreground app but the notification comes from it
+                    alwaysHeadsUpForMessaging = notificationPackageName.contains("messaging");
+                }
+                //else no call or sms, keep alwaysHeadsUpForThis off
+                //and skip the heads up if mLessBoringHeadsUp is true
+            }
+            //skip also if foregroundApp is null and mLessBoringHeadsUp is true
+
+        }
+
+        if (!mUseHeadsUp || isDeviceInVrMode() || (mLessBoringHeadsUp &&
+                (!alwaysHeadsUpForDialer && !alwaysHeadsUpForMessaging))) {
+            if (DEBUG) Log.d(TAG, "No peeking: no huns or vr mode or less boring headsup enabled");
             return false;
         }
 
