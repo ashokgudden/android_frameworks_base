@@ -141,7 +141,7 @@ public class ZygoteInit {
         // for memory sharing purposes.
         //WebViewFactory.prepareWebViewInZygote();
         //endIcuCachePinning();
-        warmUpJcaProviders();
+        //warmUpJcaProviders();
         Log.d(TAG, "end preload");
 
         sPreloadComplete = true;
