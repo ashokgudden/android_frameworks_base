@@ -98,4 +98,8 @@
     <!-- Shows when people have clicked on the custom lockscreen shortcut [CHAR LIMIT=60] -->
     <string name="custom_hint">Swipe from icon to launch</string>
 
+    <!-- Text for switch default data sub in expanded CellularTile -->
+    <string name="use_data">Use %s data</string>
+    <string name="data_sim_title">Current data sim</string>
+    <string name="data_switch_started">Wait.. switching data sim...</string> 
 </resources>

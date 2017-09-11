@@ -18,12 +18,19 @@ package com.android.systemui.qs.tiles;
 
 import android.annotation.ColorInt;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.telephony.SubscriptionInfo;
+import android.telephony.SubscriptionManager;
+import android.telephony.TelephonyManager;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.settingslib.Utils;
 import com.android.settingslib.net.DataUsageController;
@@ -32,6 +39,7 @@ import com.android.systemui.R;
 import com.android.systemui.qs.DataUsageGraph;
 
 import java.text.DecimalFormat;
+import java.util.List;
 
 /**
  * Layout for the data usage detail in quick settings.
@@ -43,6 +51,9 @@ public class DataUsageDetailView extends LinearLayout {
     private static final double GB = 1024 * MB;
 
     private final DecimalFormat FORMAT = new DecimalFormat("#.##");
+
+    private RadioGroup mRadioGroup;
+    private int mDefaultDataSim;
 
     public DataUsageDetailView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -121,6 +132,68 @@ public class DataUsageDetailView extends LinearLayout {
             infoTop.setVisibility(View.GONE);
         }
 
+        // prepare view
+
+        mRadioGroup = (RadioGroup) findViewById(R.id.sim_cards);
+        mRadioGroup.removeAllViews();
+        
+        int activeSimCount = getActiveSimCount();
+        if (activeSimCount > 1) {
+            mRadioGroup.setVisibility(View.VISIBLE);
+            for (int slotId = 0; slotId < activeSimCount; slotId++) {
+                String carrierName = getCarrierName(slotId);
+                RadioButton radioButton = new RadioButton(mContext);
+                radioButton.setText(mContext.getString(R.string.use_data, carrierName));
+//                mRadioGroup.addView(radioButton, LayoutParams.MATCH_PARENT,
+                mRadioGroup.addView(radioButton, LayoutParams.WRAP_CONTENT,
+                        LayoutParams.WRAP_CONTENT);
+            }
+
+            // check default data slot
+            mDefaultDataSim = SubscriptionManager.getDefaultDataSubscriptionId();
+            int defaultDataSlotId = SubscriptionManager.getSlotIndex(mDefaultDataSim);
+            RadioButton radioButton = (RadioButton) mRadioGroup.getChildAt(defaultDataSlotId);
+            radioButton.setChecked(true);
+
+            // set checkListener
+            mRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(RadioGroup group, int checkedId) {
+                    for (int slotId = 0; slotId < getActiveSimCount(); slotId++) {
+                        if ((mRadioGroup.getChildAt(slotId).getId() == checkedId)) {
+                            int[] subId = SubscriptionManager.getSubId(slotId);
+                            SubscriptionManager.from(mContext).setDefaultDataSubId(subId[0]);
+                        }
+                    }
+
+                    int mNewDefaultSim = SubscriptionManager.getDefaultDataSubscriptionId();
+                    if (mDefaultDataSim != mNewDefaultSim) {
+                        Intent closeIntent = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
+                        Toast.makeText(mContext, R.string.data_switch_started, Toast.LENGTH_SHORT).show();
+                        mContext.sendBroadcast(closeIntent);
+                    }
+                }
+            });
+        }
+    }
+
+    private int getActiveSimCount() {
+        int activeSimCount = 0;
+        TelephonyManager telephonyManager =
+                (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
+        for (int i =0 ; i < telephonyManager.getPhoneCount(); i++) {
+            if (telephonyManager.getSimState(i) == TelephonyManager.SIM_STATE_READY) {
+                activeSimCount++;
+            }
+        }
+        return activeSimCount;
+    }
+
+    private String getCarrierName(int slotId) {
+        SubscriptionManager sm = SubscriptionManager.from(mContext);
+        List<SubscriptionInfo> subs = sm.getActiveSubscriptionInfoList();
+        CharSequence carrierName = subs.get(slotId).getCarrierName();
+        return carrierName.toString();
     }
 
     private String formatBytes(long bytes) {
