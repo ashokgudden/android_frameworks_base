@@ -3004,4 +3004,7 @@
     <!-- Stop listening to the fingerprint reader when NON-WAKEUP proximity sensor is covered & screen is off.
          config_proximityCheckOnWake must be true. -->
     <bool name="config_proximityCheckOnFingerprintWake">true</bool>
+
+    <!-- kill app long press back -->
+    <integer name="config_backKillTimeout">1000</integer>
 </resources>
