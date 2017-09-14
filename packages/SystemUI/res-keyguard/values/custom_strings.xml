@@ -18,7 +18,4 @@
 
     <string name="weather_info_not_available">Weather informations not available</string>
 
-  <java-symbol type="integer" name="config_buttonBrightnessSettingDefault" />
-  <java-symbol type="bool" name="config_deviceHasVariableButtonBrightness" />
-
 </resources>
