@@ -21,7 +21,4 @@
     <color name="keyguard_default_secondary_text_color">#b3ffffff</color>
     <color name="keyguard_default_icon_color">#ffffffff</color>
 
-    <integer name="config_buttonBrightnessSettingDefault">255</integer>
-    <bool name="config_deviceHasVariableButtonBrightness">false</bool>
-
 </resources>
