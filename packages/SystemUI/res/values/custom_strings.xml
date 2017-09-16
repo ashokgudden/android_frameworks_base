@@ -102,4 +102,7 @@
     <string name="use_data">Use %s data</string>
     <string name="data_sim_title">Current data sim</string>
     <string name="data_switch_started">Wait.. switching data sim...</string> 
+
+    <!-- volte icon switch -->
+    <string name="status_bar_volte">VOLTE</string>
 </resources>
