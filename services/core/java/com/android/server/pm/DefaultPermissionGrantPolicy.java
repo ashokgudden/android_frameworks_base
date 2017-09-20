@@ -835,7 +835,7 @@ final class DefaultPermissionGrantPolicy {
                 grantRuntimePermissionsLPw(fiPackage, LOCATION_PERMISSIONS, userId);
                 grantRuntimePermissionsLPw(fiPackage, SMS_PERMISSIONS, userId);
             }
-            mService.mSettings.onDefaultRuntimePermissionsGrantedLPr(userId);	
+            mService.mSettings.onDefaultRuntimePermissionsGrantedLPr(userId);
 
             // ContactsProvider2
             PackageParser.Package conpro2Package = getDefaultProviderAuthorityPackageLPr(
