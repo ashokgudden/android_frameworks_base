@@ -20,7 +20,7 @@ import com.android.internal.app.AlertController.AlertParams;
 import com.android.internal.logging.MetricsLogger;
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
 import com.android.internal.util.EmergencyAffordanceManager;
-import com.android.internal.util.gzosp.GzospUtils;
+import com.android.internal.util.delight.DelightUtils;
 import com.android.internal.telephony.TelephonyIntents;
 import com.android.internal.telephony.TelephonyProperties;
 import com.android.internal.widget.LockPatternUtils;
@@ -553,13 +553,22 @@ class GlobalActionsDialog implements DialogInterface.OnDismissListener, DialogIn
 
         @Override
         public void onPress() {
-            GzospUtils.takeScreenshot(true);
+            /* wait for the dialog box to close */
+            try {
+                 Thread.sleep(1000); //1s
+            } catch (InterruptedException ie) {}
+            DelightUtils.takeScreenshot(true);
         }
 
 
         @Override
         public boolean onLongPress() {
-            GzospUtils.takeScreenshot(false);
+            mHandler.sendEmptyMessage(MESSAGE_DISMISS);
+            /* wait for the dialog box to close */
+            try {
+                 Thread.sleep(1000); //1s
+            } catch (InterruptedException ie) {}
+            DelightUtils.takeScreenshot(false);
             return true;
         }
 
