@@ -5889,7 +5889,6 @@ public class StatusBar extends SystemUI implements DemoMode,
 
             setStatusBarWindowViewOptions();
             setLockscreenMediaMetadata();
-            setQsPanelOptions();
             updateRecentsIconPack();
             updateTickerSettings();
             initTickerView();
@@ -5899,6 +5898,7 @@ public class StatusBar extends SystemUI implements DemoMode,
             setHeadsUpBlacklist();
             setBrightnessSlider();
             updateQsPanelResources();
+            setQsPanelOptions();
         }
     }
 
