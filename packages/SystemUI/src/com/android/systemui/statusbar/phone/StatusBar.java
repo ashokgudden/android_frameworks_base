@@ -157,6 +157,7 @@ import com.android.internal.statusbar.IStatusBarService;
 import com.android.internal.statusbar.NotificationVisibility;
 import com.android.internal.statusbar.StatusBarIcon;
 import com.android.internal.util.NotificationMessagingUtil;
+import com.android.internal.util.delight.DelightUtils;
 import com.android.internal.widget.LockPatternUtils;
 import com.android.keyguard.KeyguardHostView.OnDismissAction;
 import com.android.keyguard.KeyguardStatusView;
@@ -5716,6 +5717,8 @@ public class StatusBar extends SystemUI implements DemoMode,
 
     private Set<String> mNonBlockablePkgs;
 
+    private boolean mShowNavBar;
+
     @Override  // NotificationData.Environment
     public boolean isDeviceProvisioned() {
         return mDeviceProvisionedController.isDeviceProvisioned();
@@ -5818,6 +5821,9 @@ public class StatusBar extends SystemUI implements DemoMode,
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.SCREEN_BRIGHTNESS_MODE),
                     false, this, UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.Secure.getUriFor(
+                    Settings.Secure.NAVIGATION_BAR_ENABLED),
+                    false, this, UserHandle.USER_ALL);
             update();
         }
 
@@ -5848,6 +5854,16 @@ public class StatusBar extends SystemUI implements DemoMode,
             final String blackString = Settings.System.getString(mContext.getContentResolver(),
                 Settings.System.HEADS_UP_BLACKLIST_VALUES);
             splitAndAddToArrayList(mBlacklist, blackString, "\\|");
+
+            int showNavBar = Settings.Secure.getIntForUser(
+                 mContext.getContentResolver(), Settings.Secure.NAVIGATION_BAR_ENABLED,
+                 -1, mCurrentUserId);
+            if (showNavBar != -1){
+                boolean showNavBarBool = showNavBar == 1;
+                if (showNavBarBool !=  mShowNavBar){
+                    updateNavigationBar();
+                }
+            }
 
             setStatusBarWindowViewOptions();
             setLockscreenMediaMetadata();
@@ -7704,5 +7720,21 @@ public class StatusBar extends SystemUI implements DemoMode,
         lp.setTitle("GestureAnywhereView");
 
         return lp;
+    }
+
+    private void updateNavigationBar() {
+        mShowNavBar = DelightUtils.deviceSupportNavigationBarForUser(mContext, mCurrentUserId);
+        if (DEBUG) Log.v(TAG, "updateNavigationBar=" + mShowNavBar);
+
+        if (mShowNavBar) {
+            if (mNavigationBarView == null) {
+                createNavigationBar();
+            }
+        } else {
+            if (mNavigationBarView != null){
+                mWindowManager.removeViewImmediate(mNavigationBarView);
+                mNavigationBarView = null;
+            }
+        }
     }
 }
