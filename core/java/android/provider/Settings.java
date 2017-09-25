@@ -4156,6 +4156,13 @@ public final class Settings {
          */
         public static final String FP_UNLOCK_KEYSTORE = "fp_unlock_keystore";
 
+        /**
+         * Applications list where heasdup should't show
+         *
+         * @hide
+         */
+        public static final String HEADS_UP_STOPLIST_VALUES = "heads_up_stoplist_values";
+
         /** End of Delight system settings**/
 
         /**
