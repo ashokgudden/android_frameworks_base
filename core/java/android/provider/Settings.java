@@ -4546,7 +4546,15 @@ public final class Settings {
         public static final String DISABLE_TRANSITION_ANIMATIONS = "disable_transition_animations";
 
         /**
+         * Indicates whether ANBI (Accidental navigation button interaction) is enabled.
+         *
+         * @hide
+         */
+        public static final String ANBI_ENABLED = "anbi_enabled";
+
+        /**
          * AOKP Custom System Animations
+
          * @hide
          */
         public static final String[] ACTIVITY_ANIMATION_CONTROLS = new String[] {
