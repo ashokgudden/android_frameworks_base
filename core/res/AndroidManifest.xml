@@ -547,6 +547,8 @@
     <protected-broadcast
             android:name="com.android.server.policy.PhoneWindowManager.ACTION_TORCH_OFF" />
 
+    <!-- GZOSP additions start -->
+    <protected-broadcast android:name="android.settings.SHOW_INPUT_METHOD_PICKER" />
 
     <!-- ====================================================================== -->
     <!--                          RUNTIME PERMISSIONS                           -->
