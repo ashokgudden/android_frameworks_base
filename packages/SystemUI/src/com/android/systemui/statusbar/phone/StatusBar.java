@@ -5823,63 +5823,38 @@ public class StatusBar extends SystemUI implements DemoMode,
 
         @Override
         public void onChange(boolean selfChange, Uri uri) {
-            if (uri.equals(Settings.System.getUriFor(
-                    Settings.System.DOUBLE_TAP_SLEEP_LOCKSCREEN))) {
-                setStatusBarWindowViewOptions();
-            } else if (uri.equals(Settings.System.getUriFor(
-                    Settings.System.STATUS_BAR_QUICK_QS_PULLDOWN))) {
-                setStatusBarWindowViewOptions();
-            } else if (uri.equals(Settings.System.getUriFor(
-                    Settings.System.LOCKSCREEN_MEDIA_METADATA))) {
-                setLockscreenMediaMetadata();
-            } else if (uri.equals(Settings.System.getUriFor(
-                    Settings.System.QS_FOOTER_WARNINGS))) {
-                setQsPanelOptions();
-            } else if (uri.equals(Settings.System.getUriFor(
-                    Settings.System.DOUBLE_TAP_SLEEP_GESTURE))) {
-                setStatusBarWindowViewOptions();
-            } else if (uri.equals(Settings.System.getUriFor(
-                    Settings.System.RECENTS_ICON_PACK))) {
-                updateRecentsIconPack();
-            } else if (uri.equals(Settings.System.getUriFor(
-                    Settings.System.STATUS_BAR_SHOW_TICKER))) {
-                updateTickerSettings();
-                initTickerView();
-            } else if (uri.equals(Settings.System.getUriFor(
-                    Settings.System.DOUBLE_TAP_SLEEP_NAVBAR))) {
-                setDoubleTapNavbar();
-            } else if (uri.equals(Settings.Secure.getUriFor(
-                            Settings.Secure.STATUS_BAR_BATTERY_SAVER_COLOR))) {
-                mBatterySaverColor = Settings.Secure.getIntForUser(
-                        mContext.getContentResolver(),
-                        Settings.Secure.STATUS_BAR_BATTERY_SAVER_COLOR, 0xfff4511e,
-                        UserHandle.USER_CURRENT);
-            } else if (uri.equals(Settings.System.getUriFor(
-                    Settings.System.HEADS_UP_STOPLIST_VALUES))) {
-                final String stopString = Settings.System.getString(mContext.getContentResolver(),
-                        Settings.System.HEADS_UP_STOPLIST_VALUES);
-                splitAndAddToArrayList(mStoplist, stopString, "\\|");
-            } else if (uri.equals(Settings.System.getUriFor(
-                    Settings.System.HEADS_UP_BLACKLIST_VALUES))) {
-                final String blackString = Settings.System.getString(mContext.getContentResolver(),
-                        Settings.System.HEADS_UP_BLACKLIST_VALUES);
-                splitAndAddToArrayList(mBlacklist, blackString, "\\|");
-            } else if (uri.equals(Settings.System.getUriFor(
-                    Settings.System.STATUS_BAR_BRIGHTNESS_CONTROL))
-                    || uri.equals(Settings.System.getUriFor(
-                    Settings.System.SCREEN_BRIGHTNESS_MODE))) {
-                setBrightnessSlider();
-            }
+            update();
         }
 
         public void update() {
+
+            if (mStatusBarWindowManager != null) {
+                mStatusBarWindowManager.updateKeyguardScreenRotation();
+            }
+
+            if (mQuickStatusBarHeader != null) {
+                mQuickStatusBarHeader.updateSettings();
+            }
+
+            mBatterySaverColor = Settings.Secure.getIntForUser(
+                mContext.getContentResolver(),
+                Settings.Secure.STATUS_BAR_BATTERY_SAVER_COLOR, 0xfff4511e,
+                UserHandle.USER_CURRENT);
+
+            final String stopString = Settings.System.getString(mContext.getContentResolver(),
+                Settings.System.HEADS_UP_STOPLIST_VALUES);
+            splitAndAddToArrayList(mStoplist, stopString, "\\|");
+
+            final String blackString = Settings.System.getString(mContext.getContentResolver(),
+                Settings.System.HEADS_UP_BLACKLIST_VALUES);
+            splitAndAddToArrayList(mBlacklist, blackString, "\\|");
+
             setStatusBarWindowViewOptions();
             setLockscreenMediaMetadata();
             setQsPanelOptions();
             updateRecentsIconPack();
-            if (mStatusBarWindowManager != null) {
-                mStatusBarWindowManager.updateKeyguardScreenRotation();
-            }
+            updateTickerSettings();
+            initTickerView();
             setDoubleTapNavbar();
             setStatusbarBatterySaverColor();
             setHeadsUpStoplist();
