@@ -19,7 +19,12 @@ import static com.android.systemui.statusbar.phone.StatusBar.reinflateSignalClus
 import android.annotation.Nullable;
 import android.app.Fragment;
 import android.app.StatusBarManager;
+import android.content.ContentResolver;
+import android.database.ContentObserver;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.UserHandle;
+import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,6 +35,7 @@ import com.android.systemui.Dependency;
 import com.android.systemui.Interpolators;
 import com.android.systemui.R;
 import com.android.systemui.SysUiServiceProvider;
+import com.android.systemui.omni.NetworkTraffic;
 import com.android.systemui.statusbar.CommandQueue;
 import com.android.systemui.statusbar.SignalClusterView;
 import com.android.systemui.statusbar.phone.StatusBarIconController.DarkIconManager;
@@ -38,7 +44,6 @@ import com.android.systemui.statusbar.policy.EncryptionHelper;
 import com.android.systemui.statusbar.policy.KeyguardMonitor;
 import com.android.systemui.statusbar.policy.NetworkController;
 import com.android.systemui.statusbar.policy.NetworkController.SignalCallback;
-import com.android.systemui.statusbar.policy.NetworkTraffic;
 
 /**
  * Contains the collapsed status bar and handles hiding/showing based on disable flags
@@ -63,6 +68,37 @@ public class CollapsedStatusBarFragment extends Fragment implements CommandQueue
     // omni additions start
     private boolean mShowNetworkTraffic;
     private NetworkTraffic mNetworkTraffic;
+    private final Handler mHandler = new Handler();
+
+    private class OmniSettingsObserver extends ContentObserver {
+        OmniSettingsObserver(Handler handler) {
+            super(handler);
+        }
+
+        void observe() {
+            ContentResolver resolver = getContext().getContentResolver();
+            resolver.registerContentObserver(Settings.System
+                    .getUriFor(Settings.System.NETWORK_TRAFFIC_ENABLE), false,
+                    this, UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.System
+                    .getUriFor(Settings.System.NETWORK_TRAFFIC_STATE), false,
+                    this, UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.System
+                    .getUriFor(Settings.System.NETWORK_TRAFFIC_AUTOHIDE), false,
+                    this, UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.System
+                    .getUriFor(Settings.System.NETWORK_TRAFFIC_AUTOHIDE_THRESHOLD), false,
+                    this, UserHandle.USER_ALL);
+        }
+
+        @Override
+        public void onChange(boolean selfChange) {
+            if (mNetworkTraffic != null) {
+                mNetworkTraffic.updateSettings();
+            }
+        }
+    }
+    private OmniSettingsObserver mOmniSettingsObserver = new OmniSettingsObserver(mHandler);
 
     private SignalCallback mSignalCallback = new SignalCallback() {
         @Override
@@ -77,6 +113,7 @@ public class CollapsedStatusBarFragment extends Fragment implements CommandQueue
         mKeyguardMonitor = Dependency.get(KeyguardMonitor.class);
         mNetworkController = Dependency.get(NetworkController.class);
         mStatusBarComponent = SysUiServiceProvider.getComponent(getContext(), StatusBar.class);
+        mOmniSettingsObserver.observe();
     }
 
     @Override
@@ -98,6 +135,7 @@ public class CollapsedStatusBarFragment extends Fragment implements CommandQueue
         mSignalClusterView = mStatusBar.findViewById(R.id.signal_cluster);
         Dependency.get(DarkIconDispatcher.class).addDarkReceiver(mSignalClusterView);
         mNetworkTraffic = (NetworkTraffic) mStatusBar.findViewById(R.id.networkTraffic);
+        mNetworkTraffic.updateSettings();
         // Default to showing until we know otherwise.
         showSystemIconArea(false);
         initEmergencyCryptkeeperText();
