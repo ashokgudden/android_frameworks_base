@@ -4030,6 +4030,11 @@ public final class Settings {
         // CUSTOM system settings
 
         /**
+         * @hide
+         */
+        public static final String NETWORK_TRAFFIC_ENABLE = "network_traffic_enable";
+
+        /**
          * Network traffic indicator, goes from least to greatest significant bitwise
          * 0 = Display up-stream traffic if set
          * 1 = Display down-stream traffic if set
