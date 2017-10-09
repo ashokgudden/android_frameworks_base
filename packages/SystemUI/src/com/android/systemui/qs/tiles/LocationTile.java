@@ -106,6 +106,7 @@ public class LocationTile extends QSTileImpl<BooleanState> {
             //from off to sensor only
             mController.setLocationEnabled(SENSORS_ONLY);
         }
+        refreshState();
     }
 
     @Override
