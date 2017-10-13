@@ -49,7 +49,9 @@ public class OmniJawsClient {
             = Uri.parse("content://org.omnirom.omnijaws.provider/settings");
 
     private static final String ICON_PACKAGE_DEFAULT = "org.omnirom.omnijaws";
-    private static final String ICON_PREFIX_DEFAULT = "weather";
+    private static final String ICON_PREFIX_DEFAULT = "outline";
+    private static final String EXTRA_ERROR = "error";
+    public static final int EXTRA_ERROR_DISABLED = 2;
 
     public static final String[] WEATHER_PROJECTION = new String[]{
             "city",
@@ -64,12 +66,15 @@ public class OmniJawsClient {
             "forecast_condition",
             "forecast_condition_code",
             "time_stamp",
-            "forecast_date"
+            "forecast_date",
+            "pin_wheel"
     };
 
     final String[] SETTINGS_PROJECTION = new String[] {
             "enabled",
-            "units"
+            "units",
+            "provider",
+            "setup"
     };
 
     private static final String WEATHER_UPDATE = "org.omnirom.omnijaws.WEATHER_UPDATE";
@@ -89,6 +94,8 @@ public class OmniJawsClient {
         public List<DayForecast> forecasts;
         public String tempUnits;
         public String windUnits;
+        public String provider;
+        public String pinWheel;
 
         public String toString() {
             return city + ":" + new Date(timeStamp) + ": " + windSpeed + ":" + windDirection + ":" +conditionCode + ":" + temp + ":" + humidity + ":" + condition + ":" + tempUnits + ":" + windUnits + ": " + forecasts;
@@ -188,12 +195,11 @@ public class OmniJawsClient {
         }
     }
 
-    public void updateWeather(boolean force) {
+    public void updateWeather() {
         if (isOmniJawsServiceInstalled()) {
             Intent updateIntent = new Intent(Intent.ACTION_MAIN)
                     .setClassName(SERVICE_PACKAGE, SERVICE_PACKAGE + ".WeatherService");
             updateIntent.setAction(SERVICE_PACKAGE + ".ACTION_UPDATE");
-            updateIntent.putExtra("force", force);
             mContext.startService(updateIntent);
         }
     }
@@ -240,6 +246,7 @@ public class OmniJawsClient {
                             mCachedInfo.humidity = c.getString(5);
                             mCachedInfo.condition = c.getString(6);
                             mCachedInfo.timeStamp = Long.valueOf(c.getString(11));
+                            mCachedInfo.pinWheel = c.getString(13);
                         } else {
                             DayForecast day = new DayForecast();
                             day.low = getFormattedValue(c.getFloat(7));
@@ -338,12 +345,31 @@ public class OmniJawsClient {
 
     public void setOmniJawsEnabled(boolean value) {
         if (isOmniJawsServiceInstalled()) {
+            // check first time enablement and redirect to settings
+            // cause we need to enable gps for it
             Intent updateIntent = new Intent(Intent.ACTION_MAIN)
                     .setClassName(SERVICE_PACKAGE, SERVICE_PACKAGE + ".WeatherService");
             updateIntent.setAction(SERVICE_PACKAGE + ".ACTION_ENABLE");
             updateIntent.putExtra("enable", value);
             mContext.startService(updateIntent);
         }
+    }
+
+    public boolean isOmniJawsSetupDone() {
+        if (!isOmniJawsServiceInstalled()) {
+            return false;
+        }
+        final Cursor c = mContext.getContentResolver().query(SETTINGS_URI, SETTINGS_PROJECTION,
+                null, null, null);
+        if (c != null) {
+            int count = c.getCount();
+            if (count == 1) {
+                c.moveToPosition(0);
+                boolean setupDone = c.getInt(3) == 1;
+                return setupDone;
+            }
+        }
+        return true;
     }
 
     private void updateUnits() {
@@ -360,6 +386,7 @@ public class OmniJawsClient {
                 if (mCachedInfo != null) {
                     mCachedInfo.tempUnits = getTemperatureUnit();
                     mCachedInfo.windUnits = getWindUnit();
+                    mCachedInfo.provider = c.getString(2);
                 }
             }
         }
