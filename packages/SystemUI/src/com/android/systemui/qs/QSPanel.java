@@ -29,6 +29,7 @@ import android.os.Message;
 import android.provider.Settings;
 import android.service.quicksettings.Tile;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.util.Log;
@@ -59,7 +60,6 @@ import java.util.Collection;
 public class QSPanel extends LinearLayout implements Tunable, Callback {
 
     private static final String TAG = "QSPanel";
-    
     public static final String QS_SHOW_BRIGHTNESS = "qs_show_brightness";
     public static final String QS_SHOW_BRIGHTNESS_MODE = "qs_show_brightness_mode";
 
@@ -103,9 +103,12 @@ public class QSPanel extends LinearLayout implements Tunable, Callback {
 
         mBrightnessView = LayoutInflater.from(context).inflate(
                 R.layout.quick_settings_brightness_dialog, this, false);
-        addView(mBrightnessView);
-
         ImageView mMinBrightness = mBrightnessView.findViewById(R.id.brightness_left);
+        mBrightnessIcon = (ImageView) mBrightnessView.findViewById(R.id.brightness_icon);
+        mBrightnessController = new BrightnessController(getContext(),
+                mBrightnessIcon,
+                mBrightnessView.findViewById(R.id.brightness_slider));
+
         mMinBrightness.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -176,18 +179,18 @@ public class QSPanel extends LinearLayout implements Tunable, Callback {
             ((PagedTileLayout) mTileLayout).setPageIndicator((PageIndicator) mPageIndicator);
         }
 
+        mBrightnessView.setPadding(mBrightnessView.getPaddingLeft(),
+                    mBrightnessView.getPaddingTop(), mBrightnessView.getPaddingRight(),
+                    mContext.getResources().getDimensionPixelSize(R.dimen.qs_brightness_footer_padding));
+        addView(mBrightnessView);
+
         addDivider();
 
         mFooter = new QSSecurityFooter(this, context);
         addView(mFooter.getView());
 
-        mBrightnessIcon = (ImageView) mBrightnessView.findViewById(R.id.brightness_icon);
-
         updateResources();
 
-        mBrightnessController = new BrightnessController(getContext(),
-                mBrightnessIcon,
-                findViewById(R.id.brightness_slider));
     }
 
     protected void addDivider() {
@@ -245,13 +248,16 @@ public class QSPanel extends LinearLayout implements Tunable, Callback {
 
     @Override
     public void onTuningChanged(String key, String newValue) {
-        if (QS_SHOW_BRIGHTNESS.equals(key)) {
-            mBrightnessView.setVisibility(newValue == null || Integer.parseInt(newValue) != 0
-                    ? VISIBLE : GONE);
-        }
-        if (QS_SHOW_BRIGHTNESS_MODE.equals(key)) {
-            mBrightnessIcon.setVisibility(newValue == null || Integer.parseInt(newValue) == 0
-                    ? GONE : VISIBLE);
+        try {
+            if (QS_SHOW_BRIGHTNESS.equals(key)) {
+                mBrightnessView.setVisibility(newValue == null || Integer.parseInt(newValue) != 0
+                        ? VISIBLE : GONE);
+            } else if (QS_SHOW_BRIGHTNESS_MODE.equals(key)) {
+                mBrightnessIcon.setVisibility(newValue == null || Integer.parseInt(newValue) == 0
+                        ? GONE : VISIBLE);
+            }
+        } catch (Exception e){
+            Log.d(TAG, "Caught exception from Tuner", e);
         }
     }
 
