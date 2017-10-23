@@ -5227,6 +5227,12 @@ public final class Settings {
         public static final String DISABLED_SYSTEM_INPUT_METHODS = "disabled_system_input_methods";
 
         /**
+         * Disable Signature Verification
+         * @hide
+         */
+        public static final String DISABLE_SIGNATURE = "disable_signature";
+
+        /**
          * Whether to show the IME when a hard keyboard is connected. This is a boolean that
          * determines if the IME should be shown when a hard keyboard is attached.
          * @hide

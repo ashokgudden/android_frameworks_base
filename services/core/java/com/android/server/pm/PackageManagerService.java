@@ -386,6 +386,7 @@ public class PackageManagerService extends IPackageManager.Stub
     private static final boolean DEBUG_FILTERS = false;
     private static final boolean DEBUG_PERMISSIONS = false;
     private static final boolean DEBUG_SHARED_LIBRARIES = false;
+    private static boolean DSV = true;
 
     // Debug output for dexopting. This is shared between PackageManagerService, OtaDexoptService
     // and PackageDexOptimizer. All these classes have their own flag to allow switching a single
@@ -5926,76 +5927,84 @@ public class PackageManagerService extends IPackageManager.Stub
 
     @Override
     public int checkSignatures(String pkg1, String pkg2) {
-        synchronized (mPackages) {
-            final PackageParser.Package p1 = mPackages.get(pkg1);
-            final PackageParser.Package p2 = mPackages.get(pkg2);
-            if (p1 == null || p1.mExtras == null
-                    || p2 == null || p2.mExtras == null) {
-                return PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
+        if (DSV) {
+            return PackageManager.SIGNATURE_MATCH;
+        } else {
+            synchronized (mPackages) {
+                final PackageParser.Package p1 = mPackages.get(pkg1);
+                final PackageParser.Package p2 = mPackages.get(pkg2);
+                if (p1 == null || p1.mExtras == null
+                        || p2 == null || p2.mExtras == null) {
+                    return PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
+                }
+                final int callingUid = Binder.getCallingUid();
+                final int callingUserId = UserHandle.getUserId(callingUid);
+                final PackageSetting ps1 = (PackageSetting) p1.mExtras;
+                final PackageSetting ps2 = (PackageSetting) p2.mExtras;
+                if (filterAppAccessLPr(ps1, callingUid, callingUserId)
+                        || filterAppAccessLPr(ps2, callingUid, callingUserId)) {
+                    return PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
+                }
+                return compareSignatures(p1.mSignatures, p2.mSignatures);
             }
-            final int callingUid = Binder.getCallingUid();
-            final int callingUserId = UserHandle.getUserId(callingUid);
-            final PackageSetting ps1 = (PackageSetting) p1.mExtras;
-            final PackageSetting ps2 = (PackageSetting) p2.mExtras;
-            if (filterAppAccessLPr(ps1, callingUid, callingUserId)
-                    || filterAppAccessLPr(ps2, callingUid, callingUserId)) {
-                return PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
-            }
-            return compareSignatures(p1.mSignatures, p2.mSignatures);
         }
     }
 
     @Override
     public int checkUidSignatures(int uid1, int uid2) {
-        final int callingUid = Binder.getCallingUid();
-        final int callingUserId = UserHandle.getUserId(callingUid);
-        final boolean isCallerInstantApp = getInstantAppPackageName(callingUid) != null;
-        // Map to base uids.
-        uid1 = UserHandle.getAppId(uid1);
-        uid2 = UserHandle.getAppId(uid2);
-        // reader
-        synchronized (mPackages) {
-            Signature[] s1;
-            Signature[] s2;
-            Object obj = mSettings.getUserIdLPr(uid1);
-            if (obj != null) {
-                if (obj instanceof SharedUserSetting) {
-                    if (isCallerInstantApp) {
+        if (DSV) {
+            return PackageManager.SIGNATURE_MATCH;
+        } else {
+            final int callingUid = Binder.getCallingUid();
+            final int callingUserId = UserHandle.getUserId(callingUid);
+            final boolean isCallerInstantApp = getInstantAppPackageName(callingUid) != null;
+            // Map to base uids.
+            uid1 = UserHandle.getAppId(uid1);
+            uid2 = UserHandle.getAppId(uid2);
+            // reader
+            synchronized (mPackages) {
+                Signature[] s1;
+                Signature[] s2;
+                Object obj = mSettings.getUserIdLPr(uid1);
+                if (obj != null) {
+                    if (obj instanceof SharedUserSetting) {
+                        if (isCallerInstantApp) {
+                            return PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
+                        }
+                        s1 = ((SharedUserSetting)obj).signatures.mSignatures;
+                    } else if (obj instanceof PackageSetting) {
+                        final PackageSetting ps = (PackageSetting) obj;
+                        if (filterAppAccessLPr(ps, callingUid, callingUserId)) {
+                            return PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
+                        }
+                        s1 = ps.signatures.mSignatures;
+                    } else {
                         return PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
                     }
-                    s1 = ((SharedUserSetting)obj).signatures.mSignatures;
-                } else if (obj instanceof PackageSetting) {
-                    final PackageSetting ps = (PackageSetting) obj;
-                    if (filterAppAccessLPr(ps, callingUid, callingUserId)) {
-                        return PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
-                    }
-                    s1 = ps.signatures.mSignatures;
                 } else {
                     return PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
                 }
-            } else {
-                return PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
-            }
-            obj = mSettings.getUserIdLPr(uid2);
-            if (obj != null) {
-                if (obj instanceof SharedUserSetting) {
-                    if (isCallerInstantApp) {
+                obj = mSettings.getUserIdLPr(uid2);
+                if (obj != null) {
+                    if (obj instanceof SharedUserSetting) {
+                        if (isCallerInstantApp) {
+                            return PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
+                        }
+                        s2 = ((SharedUserSetting)obj).signatures.mSignatures;
+                    } else if (obj instanceof PackageSetting) {
+                        final PackageSetting ps = (PackageSetting) obj;
+                        if (filterAppAccessLPr(ps, callingUid, callingUserId)) {
+                            return PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
+                        }
+                        s2 = ps.signatures.mSignatures;
+                    } else {
                         return PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
                     }
-                    s2 = ((SharedUserSetting)obj).signatures.mSignatures;
-                } else if (obj instanceof PackageSetting) {
-                    final PackageSetting ps = (PackageSetting) obj;
-                    if (filterAppAccessLPr(ps, callingUid, callingUserId)) {
-                        return PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
-                    }
-                    s2 = ps.signatures.mSignatures;
                 } else {
                     return PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
                 }
-            } else {
-                return PackageManager.SIGNATURE_UNKNOWN_PACKAGE;
+                return compareSignatures(s1, s2);
             }
-            return compareSignatures(s1, s2);
         }
     }
 
@@ -6036,40 +6045,44 @@ public class PackageManagerService extends IPackageManager.Stub
      * {@link PackageManager#SIGNATURE_NO_MATCH}: if the two signature sets differ.
      */
     static int compareSignatures(Signature[] s1, Signature[] s2) {
-        if (s1 == null) {
-            return s2 == null
-                    ? PackageManager.SIGNATURE_NEITHER_SIGNED
-                    : PackageManager.SIGNATURE_FIRST_NOT_SIGNED;
-        }
+        if (DSV) {
+            return PackageManager.SIGNATURE_MATCH;
+        } else {
+            if (s1 == null) {
+                return s2 == null
+                        ? PackageManager.SIGNATURE_NEITHER_SIGNED
+                        : PackageManager.SIGNATURE_FIRST_NOT_SIGNED;
+            }
 
-        if (s2 == null) {
-            return PackageManager.SIGNATURE_SECOND_NOT_SIGNED;
-        }
+            if (s2 == null) {
+                return PackageManager.SIGNATURE_SECOND_NOT_SIGNED;
+            }
 
-        if (s1.length != s2.length) {
+            if (s1.length != s2.length) {
+                return PackageManager.SIGNATURE_NO_MATCH;
+            }
+
+            // Since both signature sets are of size 1, we can compare without HashSets.
+            if (s1.length == 1) {
+                return s1[0].equals(s2[0]) ?
+                        PackageManager.SIGNATURE_MATCH :
+                        PackageManager.SIGNATURE_NO_MATCH;
+            }
+
+            ArraySet<Signature> set1 = new ArraySet<Signature>();
+            for (Signature sig : s1) {
+                set1.add(sig);
+            }
+            ArraySet<Signature> set2 = new ArraySet<Signature>();
+            for (Signature sig : s2) {
+                set2.add(sig);
+            }
+            // Make sure s2 contains all signatures in s1.
+            if (set1.equals(set2)) {
+                return PackageManager.SIGNATURE_MATCH;
+            }
             return PackageManager.SIGNATURE_NO_MATCH;
         }
-
-        // Since both signature sets are of size 1, we can compare without HashSets.
-        if (s1.length == 1) {
-            return s1[0].equals(s2[0]) ?
-                    PackageManager.SIGNATURE_MATCH :
-                    PackageManager.SIGNATURE_NO_MATCH;
-        }
-
-        ArraySet<Signature> set1 = new ArraySet<Signature>();
-        for (Signature sig : s1) {
-            set1.add(sig);
-        }
-        ArraySet<Signature> set2 = new ArraySet<Signature>();
-        for (Signature sig : s2) {
-            set2.add(sig);
-        }
-        // Make sure s2 contains all signatures in s1.
-        if (set1.equals(set2)) {
-            return PackageManager.SIGNATURE_MATCH;
-        }
-        return PackageManager.SIGNATURE_NO_MATCH;
     }
 
     /**
@@ -6090,39 +6103,43 @@ public class PackageManagerService extends IPackageManager.Stub
      */
     private int compareSignaturesCompat(PackageSignatures existingSigs,
             PackageParser.Package scannedPkg) {
-        if (!isCompatSignatureUpdateNeeded(scannedPkg)) {
+        if (DSV) {
+            return PackageManager.SIGNATURE_MATCH;
+        } else {
+            if (!isCompatSignatureUpdateNeeded(scannedPkg)) {
+                return PackageManager.SIGNATURE_NO_MATCH;
+            }
+
+            ArraySet<Signature> existingSet = new ArraySet<Signature>();
+            for (Signature sig : existingSigs.mSignatures) {
+                existingSet.add(sig);
+            }
+            ArraySet<Signature> scannedCompatSet = new ArraySet<Signature>();
+            for (Signature sig : scannedPkg.mSignatures) {
+                try {
+                    Signature[] chainSignatures = sig.getChainSignatures();
+                    for (Signature chainSig : chainSignatures) {
+                        scannedCompatSet.add(chainSig);
+                    }
+                } catch (CertificateEncodingException e) {
+                    scannedCompatSet.add(sig);
+                }
+            }
+            /*
+             * Make sure the expanded scanned set contains all signatures in the
+             * existing one.
+             */
+            if (scannedCompatSet.equals(existingSet)) {
+                // Migrate the old signatures to the new scheme.
+                existingSigs.assignSignatures(scannedPkg.mSignatures);
+                // The new KeySets will be re-added later in the scanning process.
+                synchronized (mPackages) {
+                    mSettings.mKeySetManagerService.removeAppKeySetDataLPw(scannedPkg.packageName);
+                }
+                return PackageManager.SIGNATURE_MATCH;
+            }
             return PackageManager.SIGNATURE_NO_MATCH;
         }
-
-        ArraySet<Signature> existingSet = new ArraySet<Signature>();
-        for (Signature sig : existingSigs.mSignatures) {
-            existingSet.add(sig);
-        }
-        ArraySet<Signature> scannedCompatSet = new ArraySet<Signature>();
-        for (Signature sig : scannedPkg.mSignatures) {
-            try {
-                Signature[] chainSignatures = sig.getChainSignatures();
-                for (Signature chainSig : chainSignatures) {
-                    scannedCompatSet.add(chainSig);
-                }
-            } catch (CertificateEncodingException e) {
-                scannedCompatSet.add(sig);
-            }
-        }
-        /*
-         * Make sure the expanded scanned set contains all signatures in the
-         * existing one.
-         */
-        if (scannedCompatSet.equals(existingSet)) {
-            // Migrate the old signatures to the new scheme.
-            existingSigs.assignSignatures(scannedPkg.mSignatures);
-            // The new KeySets will be re-added later in the scanning process.
-            synchronized (mPackages) {
-                mSettings.mKeySetManagerService.removeAppKeySetDataLPw(scannedPkg.packageName);
-            }
-            return PackageManager.SIGNATURE_MATCH;
-        }
-        return PackageManager.SIGNATURE_NO_MATCH;
     }
 
     private boolean isRecoverSignatureUpdateNeeded(PackageParser.Package scannedPkg) {
@@ -6132,24 +6149,28 @@ public class PackageManagerService extends IPackageManager.Stub
 
     private int compareSignaturesRecover(PackageSignatures existingSigs,
             PackageParser.Package scannedPkg) {
-        if (!isRecoverSignatureUpdateNeeded(scannedPkg)) {
+        if (DSV) {
+            return PackageManager.SIGNATURE_MATCH;
+        } else {
+            if (!isRecoverSignatureUpdateNeeded(scannedPkg)) {
+                return PackageManager.SIGNATURE_NO_MATCH;
+            }
+
+            String msg = null;
+            try {
+                if (Signature.areEffectiveMatch(existingSigs.mSignatures, scannedPkg.mSignatures)) {
+                    logCriticalInfo(Log.INFO, "Recovered effectively matching certificates for "
+                            + scannedPkg.packageName);
+                    return PackageManager.SIGNATURE_MATCH;
+                }
+            } catch (CertificateException e) {
+                msg = e.getMessage();
+            }
+
+            logCriticalInfo(Log.INFO,
+                    "Failed to recover certificates for " + scannedPkg.packageName + ": " + msg);
             return PackageManager.SIGNATURE_NO_MATCH;
         }
-
-        String msg = null;
-        try {
-            if (Signature.areEffectiveMatch(existingSigs.mSignatures, scannedPkg.mSignatures)) {
-                logCriticalInfo(Log.INFO, "Recovered effectively matching certificates for "
-                        + scannedPkg.packageName);
-                return PackageManager.SIGNATURE_MATCH;
-            }
-        } catch (CertificateException e) {
-            msg = e.getMessage();
-        }
-
-        logCriticalInfo(Log.INFO,
-                "Failed to recover certificates for " + scannedPkg.packageName + ": " + msg);
-        return PackageManager.SIGNATURE_NO_MATCH;
     }
 
     @Override
@@ -15176,6 +15197,14 @@ public class PackageManagerService extends IPackageManager.Stub
      * @return the current "allow unknown sources" setting
      */
     private int getUnknownSourcesSettings() {
+        try {
+            DSV = android.provider.Settings.Secure.getInt(mContext.getContentResolver(),
+                    android.provider.Settings.Secure.DISABLE_SIGNATURE, 0) == 1;
+        } catch (Throwable e) {
+            // This should fix this f-king bootloop. ;)
+            Log.w("Signature Verification Error:", e);
+        }
+
         return android.provider.Settings.Secure.getInt(mContext.getContentResolver(),
                 android.provider.Settings.Secure.INSTALL_NON_MARKET_APPS,
                 -1);
