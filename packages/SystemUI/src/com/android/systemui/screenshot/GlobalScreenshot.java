@@ -41,7 +41,8 @@ import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.PointF;
 import android.graphics.Rect;
-import android.media.MediaActionSound;
+import android.media.MediaPlayer;
+import android.media.MediaPlayer.OnCompletionListener;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -49,6 +50,7 @@ import android.os.Environment;
 import android.os.Process;
 import android.os.UserHandle;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.LayoutInflater;
@@ -69,6 +71,8 @@ import com.android.systemui.util.NotificationChannels;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.lang.IllegalStateException;
+import java.lang.NullPointerException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -439,7 +443,7 @@ class GlobalScreenshot {
 
     private AsyncTask<Void, Void, Void> mSaveInBgTask;
 
-    private MediaActionSound mCameraSound;
+    private MediaPlayer mp;
 
     private final int mSfHwRotation;
 
@@ -508,10 +512,6 @@ class GlobalScreenshot {
         }
         mPreviewWidth = panelWidth;
         mPreviewHeight = r.getDimensionPixelSize(R.dimen.notification_max_height);
-
-        // Setup the Camera shutter sound
-        mCameraSound = new MediaActionSound();
-        mCameraSound.load(MediaActionSound.SHUTTER_CLICK);
 
         // Load hardware rotation from prop
         mSfHwRotation = android.os.SystemProperties.getInt("ro.sf.hwrotation", 0) / 90;
@@ -718,8 +718,32 @@ class GlobalScreenshot {
             @Override
             public void run() {
                 // Play the shutter sound to notify that we've taken a screenshot
-                mCameraSound.play(MediaActionSound.SHUTTER_CLICK);
+                if (Settings.System.getInt(mContext.getContentResolver(), Settings.System.SCREENSHOT_SOUND, 1) == 1) {
+                    // Resetting mediaplayer object and setup the Screenshot sound
+                    if (mp != null) {
+                        try {
+                            mp.reset();
+                        } catch (IllegalStateException e) {
+                            Log.d("ScreenshotError", "Mediaplayer is in illegal state!!");
+                        }
+                    }
+                    mp = MediaPlayer.create(mContext, Uri.parse("file://" + "/system/media/audio/ui/camera_click.ogg"));
 
+                    if (mp != null) {
+                        mp.setOnCompletionListener(new OnCompletionListener() {
+                            @Override
+                            public void onCompletion(MediaPlayer mp) {
+                                mp.release();
+                                mp = null;
+                            }
+                        });
+                        try {
+                            mp.start();
+                        } catch (IllegalStateException e) {
+                            Log.d("ScreenshotError", "Mediaplayer is in illegal state!!");
+                        }
+                     }
+                }
                 mScreenshotView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
                 mScreenshotView.buildLayer();
                 mScreenshotAnimation.start();

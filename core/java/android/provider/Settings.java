@@ -4029,6 +4029,12 @@ public final class Settings {
         public static final String RECENTS_ICON_PACK = "recents_icon_pack";
 
         /**
+         * Whether to use icon pack for Recents
+         * @hide
+         */
+        public static final String SCREENSHOT_SOUND = "screenshot_sound";
+
+        /**
          * Whether to show the notification ticker on the status bar
          * @hide
          */
