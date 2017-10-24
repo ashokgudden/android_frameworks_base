@@ -891,6 +891,7 @@ public class KeyguardBottomAreaView extends FrameLayout implements View.OnClickL
         @Override
         public IconState getIcon() {
             ResolveInfo resolved = resolveCameraIntent(0);
+            // Because of CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP, we are passing 0 as the method now needs a parameter
             boolean isCameraDisabled = (mStatusBar != null) && !mStatusBar.isCameraAllowedByAdmin();
             mIconState.isVisible = !isCameraDisabled && resolved != null
                     && getResources().getBoolean(R.bool.config_keyguardShowCameraAffordance)
