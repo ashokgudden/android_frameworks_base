@@ -23,7 +23,9 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.ContentObserver;
 import android.net.Uri;
+import android.os.CountDownTimer;
 import android.os.PowerManager;
+import android.os.SystemClock;
 import android.provider.Settings;
 import android.service.quicksettings.Tile;
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
@@ -37,6 +39,16 @@ public class CaffeineTile extends QSTileImpl<BooleanState> {
 
     private final PowerManager.WakeLock mWakeLock;
     private final Receiver mReceiver = new Receiver();
+    private int mSecondsRemaining;
+    private int mDuration;
+    private static int[] DURATIONS = new int[] {
+        5 * 60,   // 5 min
+        10 * 60,  // 10 min
+        30 * 60,  // 30 min
+        -1,       // infinity
+    };
+    private CountDownTimer mCountdownTimer = null;
+    public long mLastClickTime = -1;
 
     public CaffeineTile(QSHost host) {
         super(host);
@@ -53,6 +65,7 @@ public class CaffeineTile extends QSTileImpl<BooleanState> {
     @Override
     protected void handleDestroy() {
         super.handleDestroy();
+        stopCountDown();
         mReceiver.destroy();
         if (mWakeLock.isHeld()) {
             mWakeLock.release();
@@ -74,12 +87,39 @@ public class CaffeineTile extends QSTileImpl<BooleanState> {
 
     @Override
     public void handleClick() {
-        // toggle
-        if (mWakeLock.isHeld()) {
-            mWakeLock.release();
+        // If last user clicks < 5 seconds
+        // we cycle different duration
+        // otherwise toggle on/off
+        if (mWakeLock.isHeld() && (mLastClickTime != -1) &&
+                (SystemClock.elapsedRealtime() - mLastClickTime < 5000)) {
+            // cycle duration
+            mDuration++;
+            if (mDuration >= DURATIONS.length) {
+                // all durations cycled, turn if off
+                mDuration = -1;
+                stopCountDown();
+                if (mWakeLock.isHeld()) {
+                    mWakeLock.release();
+                }
+            } else {
+                // change duration
+                startCountDown(DURATIONS[mDuration]);
+                if (!mWakeLock.isHeld()) {
+                    mWakeLock.acquire();
+                }
+            }
         } else {
-            mWakeLock.acquire();
+            // toggle
+            if (mWakeLock.isHeld()) {
+                mWakeLock.release();
+                stopCountDown();
+            } else {
+                mWakeLock.acquire();
+                mDuration = 0;
+                startCountDown(DURATIONS[mDuration]);
+            }
         }
+        mLastClickTime = SystemClock.elapsedRealtime();
         refreshState();
     }
 
@@ -94,16 +134,58 @@ public class CaffeineTile extends QSTileImpl<BooleanState> {
         state.value = mWakeLock.isHeld();
         state.label = mContext.getString(R.string.quick_settings_caffeine_label);
         if (state.value) {
+            state.label = formatValueWithRemainingTime();
             state.icon = ResourceIcon.get(R.drawable.ic_qs_caffeine_on);
             state.contentDescription =  mContext.getString(
                     R.string.accessibility_quick_settings_caffeine_on);
             state.state = Tile.STATE_ACTIVE;
         } else {
+            state.label = mContext.getString(R.string.quick_settings_caffeine_label);
             state.icon = ResourceIcon.get(R.drawable.ic_qs_caffeine_off);
             state.contentDescription =  mContext.getString(
                     R.string.accessibility_quick_settings_caffeine_off);
             state.state = Tile.STATE_INACTIVE;
         }
+    }
+
+    private void startCountDown(long duration) {
+        stopCountDown();
+        mSecondsRemaining = (int)duration;
+        if (duration == -1) {
+            // infinity timing, no need to start timer
+            return;
+        }
+        mCountdownTimer = new CountDownTimer(duration * 1000, 1000) {
+
+            @Override
+            public void onTick(long millisUntilFinished) {
+                mSecondsRemaining = (int) (millisUntilFinished / 1000);
+                refreshState();
+            }
+
+            @Override
+            public void onFinish() {
+                if (mWakeLock.isHeld())
+                    mWakeLock.release();
+                refreshState();
+            }
+
+        }.start();
+    }
+
+    private void stopCountDown() {
+        if (mCountdownTimer != null) {
+            mCountdownTimer.cancel();
+            mCountdownTimer = null;
+        }
+    }
+
+    private String formatValueWithRemainingTime() {
+        if (mSecondsRemaining == -1) {
+            return "\u221E"; // infinity
+        }
+        return String.format("%02d:%02d",
+                        mSecondsRemaining / 60 % 60, mSecondsRemaining % 60);
     }
 
     private final class Receiver extends BroadcastReceiver {
@@ -123,6 +205,7 @@ public class CaffeineTile extends QSTileImpl<BooleanState> {
             String action = intent.getAction();
             if (Intent.ACTION_SCREEN_OFF.equals(action)) {
                 // disable caffeine if user force off (power button)
+                stopCountDown();
                 if (mWakeLock.isHeld()) {
                     mWakeLock.release();
                 }
