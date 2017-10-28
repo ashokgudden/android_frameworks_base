@@ -2073,13 +2073,13 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 toggleSplitScreen();
                 break;
             case KEY_ACTION_SCREENSHOT:
-                NitrogenUtils.takeScreenshot(true);
+                DelightUtils.takeScreenshot(true);
                 break;
             case KEY_ACTION_PARTIAL_SCREENSHOT:
-                NitrogenUtils.takeScreenshot(false);
+                DelightUtils.takeScreenshot(false);
                 break;
             case KEY_ACTION_PIP:
-                NitrogenUtils.sendKeycode(171);
+                DelightUtils.sendKeycode(171);
                 break;
             default:
                 break;

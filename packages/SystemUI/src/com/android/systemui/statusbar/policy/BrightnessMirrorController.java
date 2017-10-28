@@ -140,7 +140,7 @@ public class BrightnessMirrorController {
         }
         // enable the brightness icon
         boolean brightnessIconEnabled = Settings.System.getIntForUser(
-                mContext.getContentResolver(), Settings.System.QS_SHOW_BRIGHTNESS_ICON,
+                mContext.getContentResolver(), Settings.System.QS_SHOW_BRIGHTNESS_MODE,
                 1, UserHandle.USER_CURRENT) == 1;
         mIcon = (ImageView) mBrightnessMirror.findViewById(R.id.brightness_icon);
         mIcon.setVisibility(brightnessIconEnabled? View.VISIBLE : View.GONE);
