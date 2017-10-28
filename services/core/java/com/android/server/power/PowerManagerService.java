@@ -227,7 +227,6 @@ public final class PowerManagerService extends SystemService
     private static final int HALT_MODE_SHUTDOWN = 0;
     private static final int HALT_MODE_REBOOT = 1;
     private static final int HALT_MODE_REBOOT_SAFE_MODE = 2;
-
     private static final int BUTTON_ON_DURATION = 5 * 1000;
 
     // File location for last reboot reason
