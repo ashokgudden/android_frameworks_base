@@ -23457,10 +23457,6 @@ Slog.v(TAG, ":: stepped forward, applying functor at tag " + parser.getName());
         }
 
         Slog.v(TAG, "reconcileAppsData finished " + preparedCount + " packages");
-        // @ WAKEBLOCK
-        com.giovannibozzano.wakeblock.WakeBlockService.injectWakeBlock();
-        // # WAKEBLOCK
-
         return result;
     }
 
