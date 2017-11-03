@@ -261,6 +261,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
+import java.lang.IllegalStateException;
 import java.lang.reflect.Constructor;
 
 import dalvik.system.PathClassLoader;
@@ -8380,7 +8381,11 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         Intent intent = new Intent(lineageos.content.Intent.ACTION_LID_STATE_CHANGED);
         intent.putExtra(lineageos.content.Intent.EXTRA_LID_STATE, mLidState);
         intent.setFlags(Intent.FLAG_RECEIVER_REPLACE_PENDING);
-        mContext.sendBroadcastAsUser(intent, UserHandle.SYSTEM);
+        try {
+            mContext.sendBroadcastAsUser(intent, UserHandle.SYSTEM);
+        } catch(IllegalStateException ise) { 
+            // don't raise an exception, we're releasing the resources.
+        }
     }
 
     void updateUiMode() {
