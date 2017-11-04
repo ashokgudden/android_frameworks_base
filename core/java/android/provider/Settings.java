@@ -4684,8 +4684,6 @@ public final class Settings {
         public static final Validator TORCH_LONG_PRESS_POWER_TIMEOUT_VALIDATOR =
                 new InclusiveIntegerRangeValidator(0, 3600);
 
-        /** End of Delight system settings**/
-
         /**
          * @hide
          */
@@ -4696,8 +4694,6 @@ public final class Settings {
          * @hide
          */
         public static final String QS_SHOW_BRIGHTNESS_MODE = "qs_show_brightness_mode";
-
-        /** End of Delight system settings**/
 
          /**
          * Whether to display qs tile titles in the qs panel
@@ -4952,22 +4948,17 @@ public final class Settings {
             PRIVATE_SETTINGS.add(LOCKSCREEN_ROTATION);
             PRIVATE_SETTINGS.add(DOUBLE_TAP_SLEEP_NAVBAR);
             PRIVATE_SETTINGS.add(TOAST_ICON);
-<<<<<<< HEAD
             PRIVATE_SETTINGS.add(QS_QUICKBAR_SCROLL_ENABLED);
             PRIVATE_SETTINGS.add(QS_ROWS_PORTRAIT);
             PRIVATE_SETTINGS.add(QS_ROWS_LANDSCAPE);
             PRIVATE_SETTINGS.add(QS_COLUMNS_PORTRAIT);
             PRIVATE_SETTINGS.add(QS_COLUMNS_LANDSCAPE);
             PRIVATE_SETTINGS.add(QS_TILE_TITLE_VISIBILITY);
-=======
-            PRIVATE_SETTINGS.add(AMBIENT_DOZE_CUSTOM_BRIGHTNESS);
-            PRIVATE_SETTINGS.add(AMBIENT_DOZE_AUTO_BRIGHTNESS);
             PRIVATE_SETTINGS.add(STATUS_BAR_CUSTOM_HEADER);
             PRIVATE_SETTINGS.add(STATUS_BAR_CUSTOM_HEADER_SHADOW);
             PRIVATE_SETTINGS.add(STATUS_BAR_DAYLIGHT_HEADER_PACK);
             PRIVATE_SETTINGS.add(STATUS_BAR_CUSTOM_HEADER_PROVIDER);
             PRIVATE_SETTINGS.add(STATUS_BAR_CUSTOM_HEADER_IMAGE);
->>>>>>> a6c88324eeb... [1/2] base: add back qs header images
         }
 
         /**
@@ -6151,6 +6142,12 @@ public final class Settings {
          * @hide
          */
         public static final String SHOW_IME_WITH_HARD_KEYBOARD = "show_ime_with_hard_keyboard";
+
+        /**
+         * Whether to use one tap tile action to enable or disable data 
+         * @hide
+         */
+        public static final String QS_DATA_ADVANCED = "qs_data_advanced";
 
         /**
          * Host name and port for global http proxy. Uses ':' seperator for
