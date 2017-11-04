@@ -106,7 +106,7 @@ public class CellularTile extends QSTileImpl<SignalState> {
         boolean easyToggle = isAdvancedDataTileEnabled();
         if (easyToggle) {
             mDataController.setMobileDataEnabled(!mDataController.isMobileDataEnabled());
-        else {
+        } else {
             if (!mDataController.isMobileDataSupported()) {
                 mActivityStarter.postStartActivityDismissingKeyguard(CELLULAR_SETTINGS, 0);
                 return;
