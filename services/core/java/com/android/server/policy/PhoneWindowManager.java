@@ -118,6 +118,7 @@ import static android.view.WindowManagerPolicy.WindowManagerFuncs.LID_OPEN;
 import android.Manifest;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
+import android.app.ActivityManagerNative;
 import android.app.AlarmManager;
 import android.app.ActivityManager.StackId;
 import android.app.ActivityManagerInternal;
@@ -231,6 +232,7 @@ import android.view.animation.AnimationSet;
 import android.view.animation.AnimationUtils;
 import android.view.autofill.AutofillManagerInternal;
 import android.view.inputmethod.InputMethodManagerInternal;
+import android.widget.Toast;
 
 import com.android.internal.R;
 import com.android.internal.logging.MetricsLogger;
