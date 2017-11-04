@@ -17,9 +17,12 @@
 package com.android.systemui.qs.tiles;
 
 import android.content.ComponentName;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.os.UserHandle;
+import android.provider.Settings;
 import android.service.quicksettings.Tile;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -95,18 +98,42 @@ public class CellularTile extends QSTileImpl<SignalState> {
 
     @Override
     public Intent getLongClickIntent() {
-        return CELLULAR_SETTINGS;
+        return null;
     }
 
     @Override
     protected void handleClick() {
-        mDataController.setMobileDataEnabled(!mDataController.isMobileDataEnabled());
+        boolean easyToggle = isAdvancedDataTileEnabled();
+        if (easyToggle) {
+            mDataController.setMobileDataEnabled(!mDataController.isMobileDataEnabled());
+        else {
+            if (!mDataController.isMobileDataSupported()) {
+                mActivityStarter.postStartActivityDismissingKeyguard(CELLULAR_SETTINGS, 0);
+                return;
+            }
+            showDetail(true);
+        }
     }
 
     @Override
     protected void handleSecondaryClick() {
-        if (mDataController.isMobileDataSupported()) {
-            showDetail(true);
+        if (!mDataController.isMobileDataSupported()) {
+            mActivityStarter.postStartActivityDismissingKeyguard(CELLULAR_SETTINGS, 0);
+            return;
+        }
+        showDetail(true);
+    }
+
+    @Override
+    protected void handleLongClick() {
+        boolean easyToggle = isAdvancedDataTileEnabled();
+        if (easyToggle) {
+            if (!mDataController.isMobileDataSupported()) {
+                mActivityStarter.postStartActivityDismissingKeyguard(CELLULAR_SETTINGS, 0);
+            } else {
+                mDataController.setMobileDataEnabled(!mDataController.isMobileDataEnabled());
+                showDetail(true);
+            }
         } else {
             mActivityStarter.postStartActivityDismissingKeyguard(CELLULAR_SETTINGS, 0);
         }
@@ -155,6 +182,11 @@ public class CellularTile extends QSTileImpl<SignalState> {
     @Override
     public int getMetricsCategory() {
         return MetricsEvent.QS_CELLULAR;
+    }
+
+    public boolean isAdvancedDataTileEnabled() {
+        return Settings.Secure.getInt(mContext.getContentResolver(),
+                Settings.Secure.QS_DATA_ADVANCED, 0) ==  1;
     }
 
     @Override
