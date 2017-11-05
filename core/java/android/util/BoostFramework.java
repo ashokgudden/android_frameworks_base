@@ -121,25 +121,27 @@ public class BoostFramework {
 */
 
 /** @hide */
-    public void perfLockAcquire(int duration, int... list) {
-        new Thread(() -> {
-            try {
-                mAcquireFunc.invoke(mPerf, duration, list);
-            } catch(Exception e) {
-                Log.e(TAG,"Exception " + e);
-            }
-        }).start();
+    public int perfLockAcquire(int duration, int... list) {
+        int ret = -1;
+        try {
+            Object retVal = mAcquireFunc.invoke(mPerf, duration, list);
+            ret = (int)retVal;
+        } catch(Exception e) {
+            Log.e(TAG,"Exception " + e);
+        }
+        return ret;
     }
 
 /** @hide */
-    public void perfLockRelease() {
-        new Thread(() -> {
-            try {
-                mReleaseFunc.invoke(mPerf);
-            } catch(Exception e) {
-                Log.e(TAG,"Exception " + e);
-            }
-        }).start();
+    public int perfLockRelease() {
+        int ret = -1;
+        try {
+            Object retVal = mReleaseFunc.invoke(mPerf);
+            ret = (int)retVal;
+        } catch(Exception e) {
+            Log.e(TAG,"Exception " + e);
+        }
+        return ret;
     }
 
 /** @hide Reads system property
@@ -203,15 +205,16 @@ public class BoostFramework {
     }
 
 /** @hide */
-    public void perfLockAcquireTouch(MotionEvent ev, DisplayMetrics metrics,
+    public int perfLockAcquireTouch(MotionEvent ev, DisplayMetrics metrics,
                                    int duration, int... list) {
-        new Thread(() -> {
-            try {
-                mAcquireTouchFunc.invoke(mPerf, ev, metrics, duration, list);
-            } catch(Exception e) {
-                Log.e(TAG,"Exception " + e);
-            }
-        }).start();
+        int ret = -1;
+        try {
+            Object retVal = mAcquireTouchFunc.invoke(mPerf, ev, metrics, duration, list);
+            ret = (int)retVal;
+        } catch(Exception e) {
+            Log.e(TAG,"Exception " + e);
+        }
+        return ret;
     }
 
 /** @hide */
