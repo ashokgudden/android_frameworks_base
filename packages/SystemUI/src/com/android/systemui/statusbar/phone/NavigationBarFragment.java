@@ -713,4 +713,10 @@ public class NavigationBarFragment extends Fragment implements Callbacks {
             mNavigationBarView.setDoubleTapToSleep();
         }
     }
+
+    public void setTrackPlaying(boolean isPlaying) {
+        if (mNavigationBarView != null) {
+            mNavigationBarView.setTrackPlaying(isPlaying);
+        }
+    }
 }
