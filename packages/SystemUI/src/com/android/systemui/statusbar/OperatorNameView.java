@@ -137,19 +137,32 @@ public class OperatorNameView extends TextView implements DemoMode, DarkReceiver
         CharSequence displayText = null;
         List<SubscriptionInfo> subs = mKeyguardUpdateMonitor.getSubscriptionInfo(false);
         final int N = subs.size();
-        for (int i = 0; i < N; i++) {
-            int subId = subs.get(i).getSubscriptionId();
+
+        if (N > 1) {
+            int subId0 = subs.get(0).getSubscriptionId();
+            int subId1 = subs.get(1).getSubscriptionId();
+            State simState0 = mKeyguardUpdateMonitor.getSimState(subId0);
+            State simState1 = mKeyguardUpdateMonitor.getSimState(subId1);
+            CharSequence carrierName0 = subs.get(0).getCarrierName();
+            CharSequence carrierName1 = subs.get(1).getCarrierName();
+            if (!TextUtils.isEmpty(carrierName0) && !TextUtils.isEmpty(carrierName1) && simState0 == State.READY && simState1 == State.READY) {
+                ServiceState ss0 = mKeyguardUpdateMonitor.getServiceState(subId0);
+                ServiceState ss1 = mKeyguardUpdateMonitor.getServiceState(subId1);
+                if (ss0 != null && ss1 != null && ss0.getState() == ServiceState.STATE_IN_SERVICE && ss1.getState() == ServiceState.STATE_IN_SERVICE) {
+                    displayText = carrierName0.toString() + " - " + carrierName1.toString();
+                }
+            }      
+        } else if (N == 1) {
+            int subId = subs.get(0).getSubscriptionId();
             State simState = mKeyguardUpdateMonitor.getSimState(subId);
-            CharSequence carrierName = subs.get(i).getCarrierName();
+            CharSequence carrierName = subs.get(0).getCarrierName();
             if (!TextUtils.isEmpty(carrierName) && simState == State.READY) {
                 ServiceState ss = mKeyguardUpdateMonitor.getServiceState(subId);
                 if (ss != null && ss.getState() == ServiceState.STATE_IN_SERVICE) {
                     displayText = carrierName;
-                    break;
                 }
-            }
+            }       
         }
-
         setText(displayText);
     }
 }
