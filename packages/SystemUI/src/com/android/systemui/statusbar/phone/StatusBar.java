@@ -5937,6 +5937,7 @@ public class StatusBar extends SystemUI implements DemoMode,
             setBrightnessSlider();
             updateQsPanelResources();
             setQsPanelOptions();
+            //updateResources();
         }
     }
 
