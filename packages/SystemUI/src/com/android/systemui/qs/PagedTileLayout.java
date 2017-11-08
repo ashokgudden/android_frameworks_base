@@ -231,9 +231,9 @@ public class PagedTileLayout extends ViewPager implements QSTileLayout {
         for (int i = 0; i < mPages.size(); i++) {
             changed |= mPages.get(i).updateResources();
         }
-        if (changed) {
+//        if (changed) {
             distributeTiles();
-        }
+//        }
         return changed;
     }
 
@@ -266,7 +266,7 @@ public class PagedTileLayout extends ViewPager implements QSTileLayout {
     }
 
     public static class TilePage extends TileLayout {
-        private int mMaxRows = 3;
+        private int mMaxRows = 5;
 
         public TilePage(Context context, AttributeSet attrs) {
             super(context, attrs);
