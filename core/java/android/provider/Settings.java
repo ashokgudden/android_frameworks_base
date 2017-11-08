@@ -11000,12 +11000,6 @@ public final class Settings {
         public static final String LOCATION_SETTINGS_LINK_TO_PERMISSIONS_ENABLED =
                 "location_settings_link_to_permissions_enabled";
 
-        // omni additions start global
-        /**
-         * @hide
-         */
-        public static final String SHOW_CPU_OVERLAY = "show_cpu_overlay";
-
         /**
          * Audio focus mode for ringtones when headset is connected
          * @hide
