@@ -184,7 +184,9 @@ public class QuickStatusBarHeader extends FrameLayout implements StatusBarHeader
     }
 
     public void updateSettings() {
-        mHeaderQsPanel.updateSettings();
+        if (mHeaderQsPanel != null) {
+            mHeaderQsPanel.updateSettings();
+        }
         if (mQsPanel != null) {
             mQsPanel.updateSettings();
         }
