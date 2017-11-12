@@ -100,8 +100,8 @@ public class BluetoothTile extends QSTileImpl<BooleanState> {
     	            return;
     	        }
                 if (!mState.value) {
-                    mState.value = true;
     	            mController.setBluetoothEnabled(true);
+                    mState.value = true;
                 }
                 showDetail(true);
             }
@@ -121,8 +121,8 @@ public class BluetoothTile extends QSTileImpl<BooleanState> {
                        new Intent(Settings.ACTION_BLUETOOTH_SETTINGS), 0);
             } else {
                 if (!mState.value) {
-                mState.value = true;
                 mController.setBluetoothEnabled(true);
+                mState.value = true;
                 }
                 showDetail(true);
             }
