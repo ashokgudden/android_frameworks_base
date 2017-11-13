@@ -162,6 +162,7 @@ public class PowerNotificationWarnings implements PowerUI.WarningsUI {
 
     @Override
     public void update(int batteryLevel, int bucket, long screenOffTime) {
+        final int prevLevel = mBatteryLevel;
         mBatteryLevel = batteryLevel;
         if (bucket >= 0) {
             mBucketDroppedNegativeTimeMs = 0;
@@ -174,8 +175,9 @@ public class PowerNotificationWarnings implements PowerUI.WarningsUI {
         // don't push the notification if battery is not charging, if we switched off the screen
         // just a while ago, if screen is on or if an alert has already pushed a while ago
         final long now = SystemClock.elapsedRealtime();
-        if (mIsPlugged && mBatteryLevel == mAlertOnChargedLevel && mScreenOffTime > 0
-                && now - mScreenOffTime > ALERT_SCREEN_OFF_TIME
+        if (mIsPlugged && mBatteryLevel != prevLevel
+                && mBatteryLevel == mAlertOnChargedLevel
+                && mScreenOffTime > 0 && now - mScreenOffTime > ALERT_SCREEN_OFF_TIME
                 && now - mLastTimeTriggered > ALERT_SCREEN_OFF_TIME) {
             mLastTimeTriggered = now;
             showChargedNotification();
