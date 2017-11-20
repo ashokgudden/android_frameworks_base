@@ -254,6 +254,12 @@ public final class ShutdownThread extends Thread {
     private static void doSystemUIReboot(Context context) {
         Intent closeDialog = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
         context.sendBroadcastAsUser(closeDialog, UserHandle.CURRENT);
+
+        /* wait for the power menu to close */
+        try {
+            Thread.sleep(1000); //1s
+        } catch (InterruptedException unused) {
+        }
         Helpers.restartSystemUI(context);
       }
 
