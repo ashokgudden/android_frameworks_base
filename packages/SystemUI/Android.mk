@@ -46,8 +46,6 @@ LOCAL_STATIC_JAVA_LIBRARIES := \
     SystemUI-tags \
     SystemUI-proto \
     org.lineageos.platform.internal
-    trail-drawing \
-    rebound
 
 LOCAL_JAVA_LIBRARIES := telephony-common
 LOCAL_JAVA_LIBRARIES += android.car
