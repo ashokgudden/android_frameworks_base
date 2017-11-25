@@ -3082,7 +3082,6 @@ public class StatusBar extends SystemUI implements DemoMode,
             if (mNavigationBarView == null) {
                 try {
                     createNavigationBar();
-                    setDoubleTapNavbar();
                 } catch (Exception e) {
                     // monkey tapping the toggle more times and too fast
                 }
@@ -5846,9 +5845,6 @@ public class StatusBar extends SystemUI implements DemoMode,
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.LOCKSCREEN_ROTATION),
                     false, this, UserHandle.USER_ALL);
-            resolver.registerContentObserver(Settings.System.getUriFor(
-                    Settings.System.DOUBLE_TAP_SLEEP_NAVBAR),
-                    false, this, UserHandle.USER_ALL);
             resolver.registerContentObserver(Settings.Secure.getUriFor(
                     Settings.Secure.STATUS_BAR_BATTERY_SAVER_COLOR),
                     false, this, UserHandle.USER_ALL);
@@ -5921,7 +5917,6 @@ public class StatusBar extends SystemUI implements DemoMode,
             updateRecentsIconPack();
             updateTickerSettings();
             initTickerView();
-            setDoubleTapNavbar();
             setStatusbarBatterySaverColor();
             setHeadsUpStoplist();
             setHeadsUpBlacklist();
@@ -5960,12 +5955,6 @@ public class StatusBar extends SystemUI implements DemoMode,
             Settings.System.RECENTS_ICON_PACK, mCurrentUserId);
         IconPackHelper.getInstance(mContext).updatePrefs(currentIconPack);
         mRecents.resetIconCache();
-    }
-
-    private void setDoubleTapNavbar() {
-        if (mNavigationBar != null) {
-            mNavigationBar.setDoubleTapToSleep();
-        }
     }
 
     private void setStatusbarBatterySaverColor() {
