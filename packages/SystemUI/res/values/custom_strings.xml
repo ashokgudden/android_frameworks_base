@@ -191,12 +191,6 @@
     <!-- Ambient display and lift gesture Tile -->
     <string name="quick_settings_doze_notifications_label">Ambient notifications</string>
 
-    <string-array name="navArrowsExcludeList">
-        <item>chrome</item>
-        <item>youtube</item>
-        <item>netflix</item>
-    </string-array>
-
      <!-- QS tiles layout customization -->
      <string name="qs_menu_item_columns">Columns portrait</string>
      <string name="qs_menu_item_columns_landscape">Columns landscape</string>
