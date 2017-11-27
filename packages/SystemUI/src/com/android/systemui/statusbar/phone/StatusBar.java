@@ -657,12 +657,6 @@ public class StatusBar extends SystemUI implements DemoMode,
                 tickTrackInfo();
             }
         }
-
-        @Override
-        public void onSessionDestroyed() {
-            super.onSessionDestroyed();
-            setTrackPlaying();
-        }
     };
 
     private void tickTrackInfo() {
