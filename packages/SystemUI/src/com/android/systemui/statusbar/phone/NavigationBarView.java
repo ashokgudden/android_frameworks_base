@@ -450,7 +450,7 @@ public class NavigationBarView extends FrameLayout implements PluginListener<Nav
         getKbLeftButton().setVisibility(backAlt ? View.VISIBLE : View.INVISIBLE);
         getKbRightButton().setVisibility(backAlt ? View.VISIBLE : View.INVISIBLE);
         getKbLeftButton().setImageDrawable(mKbLeftIcon);
-        getKbRightButton().setImageDrawable(mKbRightIcon);
+        getKbLeftButton().setImageDrawable(mKbRightIcon);
         getSkipPrevButton().setVisibility(backAlt || mIsTrackPlaying ? View.VISIBLE : View.INVISIBLE);
         getSkipNextButton().setVisibility(backAlt || mIsTrackPlaying ? View.VISIBLE : View.INVISIBLE);
         if (backAlt) {
