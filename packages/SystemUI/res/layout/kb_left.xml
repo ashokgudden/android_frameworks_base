@@ -24,5 +24,7 @@
     android:contentDescription="@string/kb_left"
     systemui:keyCode="21"
     systemui:playSound="false"
+    android:src="@drawable/ic_left"
+    android:tint="@android:color/white"
     />
 
